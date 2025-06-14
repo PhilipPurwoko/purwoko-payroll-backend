@@ -28,19 +28,23 @@ enum ReimbursementStatus {
   failed
 }
 
+enum Role {
+  admin
+  employee
+}
+
 model User {
   id            String          @id @unique @default(uuid())
   name          String          @db.VarChar(255)
-  email         String          @unique @db.VarChar(255)
+  email         String          @db.VarChar(255)
   password      String
-  roleId        String
-  role          Role?           @relation(fields: [roleId], references: [id])
+  role          Role
   isActive      Boolean         @default(false) @map("is_active")
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime?       @updatedAt @map("updated_at")
   deletedAt     DateTime?       @map("deleted_at")
-  createdBy     String          @map("created_by")
-  deletedBy     String          @map("deleted_by")
+  createdBy     String?         @map("created_by")
+  deletedBy     String?         @map("deleted_by")
   payrolls      Payroll[]
   Attendance    Attendance[]
   Overtime      Overtime[]
@@ -51,17 +55,6 @@ model User {
   @@map(name: "users")
 }
 
-model Role {
-  id        String    @id @unique @default(uuid())
-  name      String    @db.VarChar(255)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  users     User[]
-
-  @@map(name: "roles")
-}
-
 model AttendanceConfiguration {
   id                 String             @id @unique @default(uuid())
   shiftStartAt       DateTime?          @map("start_at")
@@ -69,12 +62,12 @@ model AttendanceConfiguration {
   hourlyRate         Int?               @map("hourly_rate")
   overtimeRate       Int?               @map("overtime_rate")
   overtimeMultiplier Decimal?           @map("overtime_multiplier")
-  isActive           Boolean            @default(false)
+  isActive           Boolean            @default(true)
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime?          @updatedAt @map("updated_at")
   deletedAt          DateTime?          @map("deleted_at")
-  created_by         String             @map("created_by")
-  deletedBy          String             @map("deleted_by")
+  createdBy          String?            @map("created_by")
+  deletedBy          String?            @map("deleted_by")
   AttendancePeriod   AttendancePeriod[]
 
   @@map(name: "attendance_configurations")
@@ -88,8 +81,8 @@ model AttendancePeriod {
   createdAt                 DateTime                 @default(now()) @map("created_at")
   updatedAt                 DateTime?                @updatedAt @map("updated_at")
   deletedAt                 DateTime?                @map("deleted_at")
-  created_by                String                   @map("created_by")
-  deletedBy                 String                   @map("deleted_by")
+  createdBy                 String?                  @map("created_by")
+  deletedBy                 String?                  @map("deleted_by")
   attendanceConfiguration   AttendanceConfiguration? @relation(fields: [attendanceConfigurationId], references: [id])
   Attendance                Attendance[]
   Reimbursement             Reimbursement[]
@@ -107,8 +100,8 @@ model Attendance {
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime?        @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
-  createdBy          String           @map("created_by")
-  deletedBy          String           @map("deleted_by")
+  createdBy          String?          @map("created_by")
+  deletedBy          String?          @map("deleted_by")
   user               User             @relation(fields: [userId], references: [id])
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
   Overtime           Overtime[]
@@ -124,8 +117,8 @@ model Overtime {
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime?  @updatedAt @map("updated_at")
   deletedAt    DateTime?  @map("deleted_at")
-  createdBy    String     @map("created_by")
-  deletedBy    String     @map("deleted_by")
+  createdBy    String?    @map("created_by")
+  deletedBy    String?    @map("deleted_by")
   user         User       @relation(fields: [userId], references: [id])
   attendance   Attendance @relation(fields: [attendanceId], references: [id])
 
@@ -142,8 +135,8 @@ model Reimbursement {
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime?           @updatedAt @map("updated_at")
   deletedAt          DateTime?           @map("deleted_at")
-  createdBy          String              @map("created_by")
-  deletedBy          String              @map("deleted_by")
+  createdBy          String?             @map("created_by")
+  deletedBy          String?             @map("deleted_by")
   user               User                @relation(fields: [userId], references: [id])
   attendancePeriod   AttendancePeriod    @relation(fields: [attendancePeriodId], references: [id])
 
@@ -159,8 +152,8 @@ model Payroll {
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime?        @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
-  createdBy          String           @map("created_by")
-  deletedBy          String           @map("deleted_by")
+  createdBy          String?          @map("created_by")
+  deletedBy          String?          @map("deleted_by")
   user               User             @relation(fields: [userId], references: [id])
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
   Payslip            Payslip[]
@@ -176,8 +169,8 @@ model Payslip {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
-  createdBy String    @map("created_by")
-  deletedBy String    @map("deleted_by")
+  createdBy String?   @map("created_by")
+  deletedBy String?   @map("deleted_by")
   Payroll   Payroll   @relation(fields: [payrollId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
 
@@ -191,8 +184,8 @@ model PayslipSumary {
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime?        @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
-  createdBy          String           @map("created_by")
-  deletedBy          String           @map("deleted_by")
+  createdBy          String?          @map("created_by")
+  deletedBy          String?          @map("deleted_by")
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
 
   @@map(name: "payslip_sumaries")
@@ -211,8 +204,8 @@ model AuditLog {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime? @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
-  createdBy   String    @map("created_by")
-  deletedBy   String    @map("deleted_by")
+  createdBy   String?   @map("created_by")
+  deletedBy   String?   @map("deleted_by")
   user        User      @relation(fields: [userId], references: [id])
 
   @@map(name: "audit_logs")
