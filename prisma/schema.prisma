@@ -46,6 +46,7 @@ model User {
   Overtime      Overtime[]
   Reimbursement Reimbursement[]
   Payslip       Payslip[]
+  AuditLog      AuditLog[]
 
   @@map(name: "users")
 }
@@ -195,4 +196,24 @@ model PayslipSumary {
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
 
   @@map(name: "payslip_sumaries")
+}
+
+model AuditLog {
+  id          String    @id @unique @default(uuid())
+  userId      String    @map("user_id")
+  requestId   String?   @map("request_id")
+  action      String?   @map("action")
+  description String?   @map("description")
+  table       String?   @map("table")
+  dto         Json?     @map("dto")
+  dataBefore  Json?     @map("data_before")
+  dataAfter   Json?     @map("data_after")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String    @map("created_by")
+  deletedBy   String    @map("deleted_by")
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@map(name: "audit_logs")
 }
