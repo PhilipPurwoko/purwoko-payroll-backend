@@ -13,3 +13,183 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum PayrollStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum ReimbursementStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+model User {
+  id            String          @id @unique @default(uuid())
+  name          String          @db.VarChar(255)
+  email         String          @unique @db.VarChar(255)
+  password      String
+  roleId        String
+  role          Role?           @relation(fields: [roleId], references: [id])
+  isActive      Boolean         @default(false) @map("is_active")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime?       @updatedAt @map("updated_at")
+  deletedAt     DateTime?       @map("deleted_at")
+  createdBy     String          @map("created_by")
+  deletedBy     String          @map("deleted_by")
+  payrolls      Payroll[]
+  Attendance    Attendance[]
+  Overtime      Overtime[]
+  Reimbursement Reimbursement[]
+
+  @@map(name: "users")
+}
+
+model Role {
+  id        String    @id @unique @default(uuid())
+  name      String    @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  users     User[]
+
+  @@map(name: "roles")
+}
+
+model AttendanceConfiguration {
+  id                 String             @id @unique @default(uuid())
+  shiftStartAt       DateTime?          @map("start_at")
+  shiftEndAt         DateTime?          @map("end_at")
+  hourlyRate         Int?               @map("hourly_rate")
+  overtimeRate       Int?               @map("overtime_rate")
+  overtimeMultiplier Decimal?           @map("overtime_multiplier")
+  isActive           Boolean            @default(false)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime?          @updatedAt @map("updated_at")
+  deletedAt          DateTime?          @map("deleted_at")
+  created_by         String             @map("created_by")
+  deletedBy          String             @map("deleted_by")
+  AttendancePeriod   AttendancePeriod[]
+
+  @@map(name: "attendance_configurations")
+}
+
+model AttendancePeriod {
+  id                        String                   @id @unique @default(uuid())
+  startAt                   DateTime?                @map("start_at")
+  endAt                     DateTime?                @map("end_at")
+  attendanceConfigurationId String                   @map("attendance_configuration_id")
+  createdAt                 DateTime                 @default(now()) @map("created_at")
+  updatedAt                 DateTime?                @updatedAt @map("updated_at")
+  deletedAt                 DateTime?                @map("deleted_at")
+  created_by                String                   @map("created_by")
+  deletedBy                 String                   @map("deleted_by")
+  attendanceConfiguration   AttendanceConfiguration? @relation(fields: [attendanceConfigurationId], references: [id])
+  Attendance                Attendance[]
+  Reimbursement             Reimbursement[]
+  Payroll                   Payroll[]
+  PayslipSumary             PayslipSumary[]
+
+  @@map(name: "attendance_periods")
+}
+
+model Attendance {
+  id                 String           @id @unique @default(uuid())
+  userId             String           @map("user_id")
+  checkInAt          DateTime         @map("start_at")
+  attendancePeriodId String           @map("attendance_period_id")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime?        @updatedAt @map("updated_at")
+  deletedAt          DateTime?        @map("deleted_at")
+  createdBy          String           @map("created_by")
+  deletedBy          String           @map("deleted_by")
+  user               User             @relation(fields: [userId], references: [id])
+  attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
+  Overtime           Overtime[]
+
+  @@map(name: "attendances")
+}
+
+model Overtime {
+  id           String     @id @unique @default(uuid())
+  userId       String     @map("user_id")
+  hoursTaken   Int?       @map("hours_taken")
+  attendanceId String     @map("attendance_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime?  @updatedAt @map("updated_at")
+  deletedAt    DateTime?  @map("deleted_at")
+  createdBy    String     @map("created_by")
+  deletedBy    String     @map("deleted_by")
+  user         User       @relation(fields: [userId], references: [id])
+  attendance   Attendance @relation(fields: [attendanceId], references: [id])
+
+  @@map(name: "overtimes")
+}
+
+model Reimbursement {
+  id                 String              @id @unique @default(uuid())
+  userId             String              @map("user_id")
+  amount             Int?
+  description        String?
+  status             ReimbursementStatus @default(pending)
+  attendancePeriodId String              @map("attendance_period_id")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime?           @updatedAt @map("updated_at")
+  deletedAt          DateTime?           @map("deleted_at")
+  createdBy          String              @map("created_by")
+  deletedBy          String              @map("deleted_by")
+  user               User                @relation(fields: [userId], references: [id])
+  attendancePeriod   AttendancePeriod    @relation(fields: [attendancePeriodId], references: [id])
+
+  @@map(name: "reimbursements")
+}
+
+model Payroll {
+  id                 String           @id @unique @default(uuid())
+  userId             String           @map("user_id")
+  amount             Int?
+  status             PayrollStatus    @default(pending)
+  attendancePeriodId String           @map("attendance_period_id")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime?        @updatedAt @map("updated_at")
+  deletedAt          DateTime?        @map("deleted_at")
+  createdBy          String           @map("created_by")
+  deletedBy          String           @map("deleted_by")
+  user               User             @relation(fields: [userId], references: [id])
+  attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
+  Payslip            Payslip[]
+
+  @@map(name: "payrolls")
+}
+
+model Payslip {
+  id        String    @id @unique @default(uuid())
+  url       String    @map("url")
+  payrollId String    @map("payroll_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy String    @map("created_by")
+  deletedBy String    @map("deleted_by")
+  Payroll   Payroll   @relation(fields: [payrollId], references: [id])
+
+  @@map(name: "payslips")
+}
+
+model PayslipSumary {
+  id                 String           @id @unique @default(uuid())
+  url                String           @map("url")
+  attendancePeriodId String           @map("attendance_period_id")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime?        @updatedAt @map("updated_at")
+  deletedAt          DateTime?        @map("deleted_at")
+  createdBy          String           @map("created_by")
+  deletedBy          String           @map("deleted_by")
+  attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
+
+  @@map(name: "payslip_sumaries")
+}
