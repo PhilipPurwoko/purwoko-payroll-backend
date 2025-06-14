@@ -19,16 +19,16 @@ export class SummaryController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.summaryService.findOne(+id);
+    return this.summaryService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateSummaryDto: UpdateSummaryDto) {
-    return this.summaryService.update(+id, updateSummaryDto);
+    return this.summaryService.update(id, updateSummaryDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.summaryService.remove(+id);
+    return this.summaryService.remove(id);
   }
 }

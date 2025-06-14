@@ -12,15 +12,15 @@ export class AttendancePeriodService {
     return `This action returns all attendancePeriod`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} attendancePeriod`;
   }
 
-  update(id: number, updateAttendancePeriodDto: UpdateAttendancePeriodDto) {
+  update(id: string, updateAttendancePeriodDto: UpdateAttendancePeriodDto) {
     return `This action updates a #${id} attendancePeriod`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} attendancePeriod`;
   }
 }

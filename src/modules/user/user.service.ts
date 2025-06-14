@@ -64,7 +64,6 @@ export class UserService {
       },
       data: {
         deletedAt: new Date(),
-        deletedBy: 'test',
       },
       where: {
         id,

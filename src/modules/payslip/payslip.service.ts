@@ -12,15 +12,15 @@ export class PayslipService {
     return `This action returns all payslip`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} payslip`;
   }
 
-  update(id: number, updatePayslipDto: UpdatePayslipDto) {
+  update(id: string, updatePayslipDto: UpdatePayslipDto) {
     return `This action updates a #${id} payslip`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} payslip`;
   }
 }

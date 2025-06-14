@@ -19,16 +19,16 @@ export class ReimburseController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.reimburseService.findOne(+id);
+    return this.reimburseService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateReimburseDto: UpdateReimburseDto) {
-    return this.reimburseService.update(+id, updateReimburseDto);
+    return this.reimburseService.update(id, updateReimburseDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.reimburseService.remove(+id);
+    return this.reimburseService.remove(id);
   }
 }

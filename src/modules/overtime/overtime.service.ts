@@ -12,15 +12,15 @@ export class OvertimeService {
     return `This action returns all overtime`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} overtime`;
   }
 
-  update(id: number, updateOvertimeDto: UpdateOvertimeDto) {
+  update(id: string, updateOvertimeDto: UpdateOvertimeDto) {
     return `This action updates a #${id} overtime`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} overtime`;
   }
 }

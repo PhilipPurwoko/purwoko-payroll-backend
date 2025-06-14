@@ -19,16 +19,16 @@ export class AttendancePeriodController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.attendancePeriodService.findOne(+id);
+    return this.attendancePeriodService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAttendancePeriodDto: UpdateAttendancePeriodDto) {
-    return this.attendancePeriodService.update(+id, updateAttendancePeriodDto);
+    return this.attendancePeriodService.update(id, updateAttendancePeriodDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.attendancePeriodService.remove(+id);
+    return this.attendancePeriodService.remove(id);
   }
 }

@@ -19,16 +19,16 @@ export class PayslipController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.payslipService.findOne(+id);
+    return this.payslipService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePayslipDto: UpdatePayslipDto) {
-    return this.payslipService.update(+id, updatePayslipDto);
+    return this.payslipService.update(id, updatePayslipDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.payslipService.remove(+id);
+    return this.payslipService.remove(id);
   }
 }

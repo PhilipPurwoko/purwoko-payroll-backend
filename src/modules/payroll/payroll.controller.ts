@@ -19,16 +19,16 @@ export class PayrollController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.payrollService.findOne(+id);
+    return this.payrollService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePayrollDto: UpdatePayrollDto) {
-    return this.payrollService.update(+id, updatePayrollDto);
+    return this.payrollService.update(id, updatePayrollDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.payrollService.remove(+id);
+    return this.payrollService.remove(id);
   }
 }

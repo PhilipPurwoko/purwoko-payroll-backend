@@ -12,15 +12,15 @@ export class SummaryService {
     return `This action returns all summary`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} summary`;
   }
 
-  update(id: number, updateSummaryDto: UpdateSummaryDto) {
+  update(id: string, updateSummaryDto: UpdateSummaryDto) {
     return `This action updates a #${id} summary`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} summary`;
   }
 }
