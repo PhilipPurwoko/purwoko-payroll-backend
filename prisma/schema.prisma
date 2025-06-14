@@ -45,6 +45,7 @@ model User {
   Attendance    Attendance[]
   Overtime      Overtime[]
   Reimbursement Reimbursement[]
+  Payslip       Payslip[]
 
   @@map(name: "users")
 }
@@ -168,6 +169,7 @@ model Payroll {
 
 model Payslip {
   id        String    @id @unique @default(uuid())
+  userId    String    @map("user_id")
   url       String    @map("url")
   payrollId String    @map("payroll_id")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -176,6 +178,7 @@ model Payslip {
   createdBy String    @map("created_by")
   deletedBy String    @map("deleted_by")
   Payroll   Payroll   @relation(fields: [payrollId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 
   @@map(name: "payslips")
 }
