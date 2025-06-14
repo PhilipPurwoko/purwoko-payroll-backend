@@ -2,18 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { hashSync } from 'bcrypt';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
   create(createUserDto: CreateUserDto) {
+    const { password, ...rest } = createUserDto;
+    const round = parseInt(process.env.SALT_ROUNDS || '10');
+    const passwordHash = hashSync(password, round);
     return this.prisma.user.create({
       omit: {
         password: true,
       },
       data: {
-        ...createUserDto,
+        ...rest,
+        password: passwordHash,
       },
     });
   }
@@ -29,13 +37,20 @@ export class UserService {
     });
   }
 
-  findOne(id: string) {
+  findOne(idOrEmail: string, omitPassword = true) {
     return this.prisma.user.findFirst({
       omit: {
-        password: true,
+        password: omitPassword,
       },
       where: {
-        id,
+        OR: [
+          {
+            id: idOrEmail,
+          },
+          {
+            email: idOrEmail,
+          },
+        ],
         deletedAt: null,
       },
     });

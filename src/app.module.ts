@@ -11,10 +11,12 @@ import { AttendanceConfigurationModule } from './modules/attendance_configuratio
 import { AttendancePeriodModule } from './modules/attendance_period/attendance_period.module';
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
     PrismaModule,
+    AuthModule,
     UserModule,
     AttendanceModule,
     OvertimeModule,
