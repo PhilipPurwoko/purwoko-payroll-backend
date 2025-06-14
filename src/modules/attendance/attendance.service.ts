@@ -12,15 +12,15 @@ export class AttendanceService {
     return `This action returns all attendance`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} attendance`;
   }
 
-  update(id: number, updateAttendanceDto: UpdateAttendanceDto) {
+  update(id: string, updateAttendanceDto: UpdateAttendanceDto) {
     return `This action updates a #${id} attendance`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} attendance`;
   }
 }
