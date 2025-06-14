@@ -3,17 +3,18 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { hashSync } from 'bcrypt';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {}
 
   create(createUserDto: CreateUserDto) {
     const { password, ...rest } = createUserDto;
-    const round = parseInt(process.env.SALT_ROUNDS || '10');
+    const round = this.configService.get<number>('SALT_ROUNDS') || 10;
     const passwordHash = hashSync(password, round);
     return this.prisma.user.create({
       omit: {
