@@ -14,6 +14,7 @@ import * as basicAuth from 'express-basic-auth';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import { AuditInterceptor } from './commons/audit.interceptor';
 import { AppService } from './app.service';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -52,11 +53,14 @@ async function bootstrap() {
     serverAdapter,
   });
 
+  const configService = app.get(ConfigService);
+  const bullPassword = configService.get<string>('BULL_PASSWORD') || '';
+
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.use(
     '/queues',
     basicAuth({
-      users: { admin: 'password' },
+      users: { admin: bullPassword },
       challenge: true,
     }),
     serverAdapter.getRouter(),
