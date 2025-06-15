@@ -1,34 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
-import { CreateAttendanceDto } from './dto/create-attendance.dto';
-import { UpdateAttendanceDto } from './dto/update-attendance.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { RoleGuard } from '../auth/guard/role.guard';
+import { Roles } from '../auth/decorator/role.decorator';
+import { Request } from 'express';
+import { UserInterface } from '../../interfaces/user.interface';
 
 @Controller('attendance')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('employee')
   @Post()
-  create(@Body() createAttendanceDto: CreateAttendanceDto) {
-    return this.attendanceService.create(createAttendanceDto);
+  create(@Req() req: Request) {
+    return this.attendanceService.create(req.user as UserInterface);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('employee')
   @Get()
-  findAll() {
-    return this.attendanceService.findAll();
+  findAll(@Req() req: Request) {
+    return this.attendanceService.findAll(req.user as UserInterface);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('employee')
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.attendanceService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAttendanceDto: UpdateAttendanceDto) {
-    return this.attendanceService.update(id, updateAttendanceDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.attendanceService.remove(id);
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    return this.attendanceService.findOne(id, req.user as UserInterface);
   }
 }
