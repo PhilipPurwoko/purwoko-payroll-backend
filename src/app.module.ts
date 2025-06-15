@@ -16,12 +16,20 @@ import { ConfigModule } from '@nestjs/config';
 import { RequestIdMiddleware } from './middleware/request-id.middleware';
 import { RequestContext } from './commons/request-context.service';
 import { AppLogger } from './interceptor/logger.service';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+
     PrismaModule,
     AuthModule,
     UserModule,
