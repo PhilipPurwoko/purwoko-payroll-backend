@@ -8,6 +8,7 @@ import { UpdateReimburseDto } from './dto/update-reimburse.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
 import { m } from '../../util/date.util';
+import { Status } from '@prisma/client';
 
 @Injectable()
 export class ReimburseService {
@@ -20,6 +21,7 @@ export class ReimburseService {
       where: {
         startAt: { lte: now },
         endAt: { gte: now },
+        status: Status.ongoing,
         deletedAt: null,
       },
     });

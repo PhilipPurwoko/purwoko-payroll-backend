@@ -118,7 +118,7 @@ model Overtime {
   user               User              @relation(fields: [userId], references: [id])
   attendance         Attendance        @relation(fields: [attendanceId], references: [id])
   AttendancePeriod   AttendancePeriod? @relation(fields: [attendancePeriodId], references: [id])
-  attendancePeriodId String?
+  attendancePeriodId String?           @map("attendance_period_id")
 
   @@map(name: "overtimes")
 }

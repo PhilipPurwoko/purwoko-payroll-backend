@@ -9,7 +9,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
 import { Status } from '@prisma/client';
 import { m } from '../../util/date.util';
-import _ from 'lodash';
 
 @Injectable()
 export class OvertimeService {
@@ -37,9 +36,27 @@ export class OvertimeService {
     });
     if (!attendance) throw new BadRequestException('Attendance not found');
 
+    const existingOvertime = await this.prisma.overtime.findMany({
+      where: {
+        userId: user.id,
+        attendanceId: createDto.attendanceId,
+        deletedAt: null,
+      },
+    });
+
+    const existingOvertimeHours = existingOvertime.reduce(
+      (total, overtime) => total + (overtime.hoursTaken ?? 0),
+      0,
+    );
+
+    if (existingOvertimeHours + createDto.hoursTaken > 3) {
+      throw new BadRequestException('Overtime cannot be more than 3 hours');
+    }
+
     return this.prisma.overtime.create({
       data: {
         ...createDto,
+        attendancePeriodId: attendance.attendancePeriodId,
         userId: user.id,
         createdBy: user.id,
       },
@@ -73,10 +90,7 @@ export class OvertimeService {
     const data = await this.findOne(id, user);
     if (!data) throw new NotFoundException();
 
-    if (
-      !_.isNil(updateDto.attendanceId) &&
-      !_.isEmpty(updateDto.attendanceId)
-    ) {
+    if (updateDto.attendanceId) {
       const attendance = await this.prisma.attendance.findFirst({
         where: {
           id: updateDto.attendanceId,
@@ -94,6 +108,24 @@ export class OvertimeService {
         },
       });
       if (!attendance) throw new BadRequestException('Attendance not found');
+    }
+
+    const existingOvertime = await this.prisma.overtime.findMany({
+      where: {
+        id: { not: id },
+        userId: user.id,
+        attendanceId: updateDto.attendanceId,
+        deletedAt: null,
+      },
+    });
+
+    const existingOvertimeHours = existingOvertime.reduce(
+      (total, overtime) => total + (overtime.hoursTaken ?? 0),
+      0,
+    );
+
+    if (existingOvertimeHours + (updateDto?.hoursTaken ?? 0) > 3) {
+      throw new BadRequestException('Overtime cannot be more than 3 hours');
     }
 
     return this.prisma.overtime.update({

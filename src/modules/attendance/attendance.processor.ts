@@ -53,6 +53,8 @@ export class AttendanceProcessor {
         where: {
           userId: queue.actor.id,
           status: Status.completed,
+          attendancePeriodId: attendancePeriod.id,
+          deletedAt: null,
           checkInAt: {
             gte: startOfDay,
             lte: endOfDay,
