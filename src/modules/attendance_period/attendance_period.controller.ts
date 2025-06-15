@@ -41,7 +41,6 @@ export class AttendancePeriodController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles('admin')
   @Get()
   findAll() {
     return this.attendancePeriodService.findAll();
@@ -49,7 +48,6 @@ export class AttendancePeriodController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles('admin')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.attendancePeriodService.findOne(id);
