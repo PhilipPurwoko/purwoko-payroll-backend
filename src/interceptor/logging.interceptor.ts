@@ -18,12 +18,15 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url, headers, body } = req;
 
     const now = Date.now();
+    this.logger.log(
+      `[${method}] ${url} | authorization: ${JSON.stringify(headers.authorization)} | body: ${JSON.stringify(body)}`,
+    );
     return next
       .handle()
       .pipe(
         tap(() =>
           this.logger.log(
-            `[${method}] ${url} | authorization: ${JSON.stringify(headers.authorization)} | body: ${JSON.stringify(body)} [${Date.now() - now}ms]`,
+            `[${method}] ${url} Finished in [${Date.now() - now}ms]`,
           ),
         ),
       );
