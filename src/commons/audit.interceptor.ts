@@ -20,6 +20,11 @@ export class AuditInterceptor implements NestInterceptor {
     const url = request.url;
 
     try {
+      // Exclude login
+      if (url.endsWith('/login')) {
+        return next.handle();
+      }
+
       return next.handle().pipe(
         tap(async (dataAfter): Promise<void> => {
           if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return;
