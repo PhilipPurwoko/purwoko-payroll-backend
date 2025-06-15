@@ -23,10 +23,6 @@ export function parseTimeToDate(time: string) {
     throw new BadRequestException('Invalid time values');
   }
 
-  // const now = m().toDate();
-  // now.setHours(hours, minutes, seconds, 0);
-  // const [hours, minutes, seconds] = time.split(':').map(Number);
-
   return m().set({
     hour: hours,
     minute: minutes,

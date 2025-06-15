@@ -4,17 +4,39 @@ import { SummaryService } from './summary.service';
 
 describe('SummaryController', () => {
   let controller: SummaryController;
+  let service: SummaryService;
+
+  const mockSummaryService = {
+    findAll: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SummaryController],
-      providers: [SummaryService],
+      providers: [
+        {
+          provide: SummaryService,
+          useValue: mockSummaryService,
+        },
+      ],
     }).compile();
 
     controller = module.get<SummaryController>(SummaryController);
+    service = module.get<SummaryService>(SummaryService);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should call summaryService.findAll with correct parameter', async () => {
+    const mockAttendancePeriodId = 'period-1';
+    const mockResult = { some: 'summary' };
+    mockSummaryService.findAll.mockResolvedValue(mockResult);
+
+    const result = await controller.findAll(mockAttendancePeriodId);
+
+    expect(service.findAll).toHaveBeenCalledWith(mockAttendancePeriodId);
+    expect(result).toBe(mockResult);
   });
 });
