@@ -1,26 +1,76 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { UserInterface } from '../../interfaces/user.interface';
 
 @Injectable()
 export class OvertimeService {
-  create(createOvertimeDto: CreateOvertimeDto) {
-    return 'This action adds a new overtime';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createDto: CreateOvertimeDto, user: UserInterface) {
+    if (createDto.hoursTaken > 3) {
+      throw new BadRequestException('Overtime cannot be more than 3 hours');
+    }
+    return this.prisma.overtime.create({
+      data: {
+        ...createDto,
+        userId: user.id,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all overtime`;
+  findAll(user: UserInterface) {
+    return this.prisma.overtime.findMany({
+      where: {
+        userId: user.id,
+        deletedAt: null,
+      },
+    });
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} overtime`;
+  findOne(id: string, user: UserInterface) {
+    return this.prisma.overtime.findFirst({
+      where: {
+        id,
+        userId: user.id,
+        deletedAt: null,
+      },
+    });
   }
 
-  update(id: string, updateOvertimeDto: UpdateOvertimeDto) {
-    return `This action updates a #${id} overtime`;
+  async update(id: string, updateDto: UpdateOvertimeDto, user: UserInterface) {
+    const data = await this.findOne(id, user);
+    if (!data) throw new NotFoundException();
+    return this.prisma.overtime.update({
+      data: {
+        ...updateDto,
+        updatedAt: new Date(),
+      },
+      where: {
+        id,
+        userId: user.id,
+        deletedAt: null,
+      },
+    });
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} overtime`;
+  async remove(id: string, user: UserInterface) {
+    const data = await this.findOne(id, user);
+    if (!data) throw new NotFoundException();
+    return this.prisma.overtime.update({
+      data: {
+        deletedAt: new Date(),
+      },
+      where: {
+        id,
+        userId: user.id,
+        deletedAt: null,
+      },
+    });
   }
 }
