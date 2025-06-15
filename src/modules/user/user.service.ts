@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { hashSync } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { UserInterface } from '../../interfaces/user.interface';
 
 @Injectable()
 export class UserService {
@@ -12,7 +13,7 @@ export class UserService {
     private configService: ConfigService,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  create(createUserDto: CreateUserDto, actor: UserInterface) {
     const { password, ...rest } = createUserDto;
     const round = parseInt(
       this.configService.get<string>('SALT_ROUNDS') || '10',
@@ -25,6 +26,7 @@ export class UserService {
       data: {
         ...rest,
         password: passwordHash,
+        createdBy: actor.id,
       },
     });
   }
@@ -66,7 +68,7 @@ export class UserService {
     });
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto, actor: UserInterface) {
     const data = await this.findOne(id);
     if (!data) throw new NotFoundException();
     return this.prisma.user.update({
@@ -76,6 +78,7 @@ export class UserService {
       data: {
         ...updateUserDto,
         updatedAt: new Date(),
+        updatedBy: actor.id,
       },
       where: {
         id,
@@ -84,7 +87,7 @@ export class UserService {
     });
   }
 
-  async remove(id: string) {
+  async remove(id: string, actor: UserInterface) {
     const data = await this.findOne(id);
     if (!data) throw new NotFoundException();
     return this.prisma.user.update({
@@ -93,6 +96,7 @@ export class UserService {
       },
       data: {
         deletedAt: new Date(),
+        deletedBy: actor.id,
       },
       where: {
         id,

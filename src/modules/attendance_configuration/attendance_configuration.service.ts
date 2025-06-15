@@ -7,12 +7,13 @@ import { CreateAttendanceConfigurationDto } from './dto/create-attendance_config
 import { UpdateAttendanceConfigurationDto } from './dto/update-attendance_configuration.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { parseTimeToDate } from '../../util/date.util';
+import { UserInterface } from '../../interfaces/user.interface';
 
 @Injectable()
 export class AttendanceConfigurationService {
   constructor(private prisma: PrismaService) {}
 
-  create(createDto: CreateAttendanceConfigurationDto) {
+  create(createDto: CreateAttendanceConfigurationDto, actor: UserInterface) {
     const { periodStartAt, periodEndAt, ...rest } = createDto;
     const start = parseTimeToDate(periodStartAt);
     const end = parseTimeToDate(periodEndAt);
@@ -26,6 +27,7 @@ export class AttendanceConfigurationService {
         ...rest,
         periodStartAt: start,
         periodEndAt: end,
+        createdBy: actor.id,
       },
     });
   }
@@ -47,13 +49,18 @@ export class AttendanceConfigurationService {
     });
   }
 
-  async update(id: string, updateDto: UpdateAttendanceConfigurationDto) {
+  async update(
+    id: string,
+    updateDto: UpdateAttendanceConfigurationDto,
+    actor: UserInterface,
+  ) {
     const data = await this.findOne(id);
     if (!data) throw new NotFoundException();
     return this.prisma.attendanceConfiguration.update({
       data: {
         ...updateDto,
         updatedAt: new Date(),
+        updatedBy: actor.id,
       },
       where: {
         id,
@@ -62,7 +69,7 @@ export class AttendanceConfigurationService {
     });
   }
 
-  async remove(id: string) {
+  async remove(id: string, actor: UserInterface) {
     const data = await this.findOne(id);
     if (!data) throw new NotFoundException();
     return this.prisma.attendanceConfiguration.update({
@@ -72,6 +79,7 @@ export class AttendanceConfigurationService {
       where: {
         id,
         deletedAt: null,
+        deletedBy: actor.id,
       },
     });
   }

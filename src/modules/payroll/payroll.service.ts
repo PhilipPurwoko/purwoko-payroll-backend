@@ -52,6 +52,7 @@ export class PayrollService {
       },
       data: {
         status: Status.completed,
+        updatedBy: user.id,
       },
     });
 
