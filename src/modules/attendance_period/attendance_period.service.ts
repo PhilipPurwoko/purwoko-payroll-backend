@@ -3,6 +3,7 @@ import { CreateAttendancePeriodDto } from './dto/create-attendance_period.dto';
 import { UpdateAttendancePeriodDto } from './dto/update-attendance_period.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
+import { m } from '../../util/date.util';
 
 @Injectable()
 export class AttendancePeriodService {
@@ -44,7 +45,7 @@ export class AttendancePeriodService {
     return this.prisma.attendancePeriod.update({
       data: {
         ...updateDto,
-        updatedAt: new Date(),
+        updatedAt: m().utc().toDate(),
         updatedBy: actor.id,
       },
       where: {
@@ -59,7 +60,7 @@ export class AttendancePeriodService {
     if (!data) throw new NotFoundException();
     return this.prisma.attendancePeriod.update({
       data: {
-        deletedAt: new Date(),
+        deletedAt: m().utc().toDate(),
         deletedBy: actor.id,
       },
       where: {

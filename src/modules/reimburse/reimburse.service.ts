@@ -7,13 +7,14 @@ import { CreateReimburseDto } from './dto/create-reimburse.dto';
 import { UpdateReimburseDto } from './dto/update-reimburse.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
+import { m } from '../../util/date.util';
 
 @Injectable()
 export class ReimburseService {
   constructor(private prisma: PrismaService) {}
 
   async create(createDto: CreateReimburseDto, user: UserInterface) {
-    const now = new Date();
+    const now = m().utc().toDate();
 
     const attendancePeriod = await this.prisma.attendancePeriod.findFirst({
       where: {
@@ -61,7 +62,7 @@ export class ReimburseService {
     return this.prisma.reimbursement.update({
       data: {
         ...updateDto,
-        updatedAt: new Date(),
+        updatedAt: m().utc().toDate(),
         updatedBy: user.id,
       },
       where: {
@@ -76,7 +77,7 @@ export class ReimburseService {
     if (!data) throw new NotFoundException();
     return this.prisma.reimbursement.update({
       data: {
-        deletedAt: new Date(),
+        deletedAt: m().utc().toDate(),
         deletedBy: user.id,
       },
       where: {

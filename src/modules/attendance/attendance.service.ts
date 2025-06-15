@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Status } from '@prisma/client';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { m } from 'src/util/date.util';
 
 @Injectable()
 export class AttendanceService {
@@ -14,7 +15,7 @@ export class AttendanceService {
 
   async create(user: UserInterface) {
     // Validate weekend day, 0 = Sunday, 6 = Saturday
-    const now = new Date();
+    const now = m().utc().toDate();
     const day = now.getDay();
     if (day === 0 || day === 6) {
       throw new BadRequestException('Not allowed during weekends');
