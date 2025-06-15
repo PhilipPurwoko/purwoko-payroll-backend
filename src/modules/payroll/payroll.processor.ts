@@ -45,11 +45,9 @@ export class PayrollProcessor {
 
       const config = queue.attendancePeriod.attendanceConfiguration;
       const configPeriodStartAt = new Date(
-        (config.periodStartAt as string | null) ?? '',
+        (config.startAt as string | null) ?? '',
       );
-      const configPeriodEndAt = new Date(
-        (config.periodEndAt as string | null) ?? '',
-      );
+      const configPeriodEndAt = new Date((config.endAt as string | null) ?? '');
 
       // Get hours per day
       const diffMs =
@@ -58,6 +56,7 @@ export class PayrollProcessor {
 
       // Calculate total hours
       const totalAttendance = employee?.attendances?.length ?? 0;
+      const totalOvertime = employee?.overtimes?.length ?? 0;
       const totalAttendanceHours = totalAttendance * hoursPerDay;
       const totalOvertimeHours = employee.overtimes.reduce(
         (prev, next) => prev + (next.hoursTaken ?? 0),
@@ -87,17 +86,21 @@ export class PayrollProcessor {
       });
       await this.prisma.payslip.create({
         data: {
+          attendancePeriodId: queue.attendancePeriod.id,
+          status: Status.completed,
           takeHomePay: takeHomePay,
           totalAttendanceAmount: totalAttendanceAmount,
           totalOvertimeAmount: totalOvertimeAmount,
           totalReimbursementAmount: totalReimbursementAmount,
           totalAttendance: totalAttendance,
           totalAttendanceHours: totalAttendanceHours,
+          totalOvertime: totalOvertime,
           totalOvertimeHours: totalOvertimeHours,
           hoursPerDay: hoursPerDay,
           hourlyRate: config.hourlyRate,
           overtimeRate: config.overtimeRate,
           payrollId: payroll.id,
+          overtimeMultiplier: config.overtimeMultiplier,
           userId: queue.employee.id,
           createdBy: queue.actor.id,
         },

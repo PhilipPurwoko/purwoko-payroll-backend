@@ -1,34 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { PayslipService } from './payslip.service';
-import { CreatePayslipDto } from './dto/create-payslip.dto';
-import { UpdatePayslipDto } from './dto/update-payslip.dto';
+import { Request } from 'express';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { RoleGuard } from '../auth/guard/role.guard';
+import { Roles } from '../auth/decorator/role.decorator';
+import { UserInterface } from '../../interfaces/user.interface';
 
 @Controller('payslip')
 export class PayslipController {
   constructor(private readonly payslipService: PayslipService) {}
 
-  @Post()
-  create(@Body() createPayslipDto: CreatePayslipDto) {
-    return this.payslipService.create(createPayslipDto);
-  }
-
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('employee')
   @Get()
-  findAll() {
-    return this.payslipService.findAll();
+  findAll(@Req() req: Request) {
+    return this.payslipService.findAll(req.user as UserInterface);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('employee')
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.payslipService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePayslipDto: UpdatePayslipDto) {
-    return this.payslipService.update(id, updatePayslipDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.payslipService.remove(id);
+  findOne(@Req() req: Request, @Param('id') id: string) {
+    return this.payslipService.findOne(id, req.user as UserInterface);
   }
 }
