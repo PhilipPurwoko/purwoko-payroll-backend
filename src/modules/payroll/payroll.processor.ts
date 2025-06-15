@@ -97,6 +97,7 @@ export class PayrollProcessor {
       });
       this.logger.log(`Processing payroll success: ${queue.employee.email}`);
     } catch (error) {
+      // Throwing exception will trigger retry
       this.logger.error(`Payroll failed: ${error}`);
       throw error;
     }

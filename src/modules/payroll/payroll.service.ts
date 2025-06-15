@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePayrollDto } from './dto/create-payroll.dto';
 import { UserInterface } from '../../interfaces/user.interface';
 import { InjectQueue } from '@nestjs/bull';
@@ -25,7 +25,7 @@ export class PayrollService {
       },
     });
     if (!attendancePeriod) {
-      throw new Error('Attendance period not found');
+      throw new BadRequestException('Attendance period not found');
     }
 
     const employees = await this.prisma.user.findMany({

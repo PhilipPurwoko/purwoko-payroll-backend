@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateReimburseDto } from './dto/create-reimburse.dto';
 import { UpdateReimburseDto } from './dto/update-reimburse.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -18,7 +22,9 @@ export class ReimburseService {
         deletedAt: null,
       },
     });
-    if (!attendancePeriod) throw new Error('Attendance period not found');
+    if (!attendancePeriod) {
+      throw new BadRequestException('Attendance period not found');
+    }
 
     return this.prisma.reimbursement.create({
       data: {
