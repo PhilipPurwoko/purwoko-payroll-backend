@@ -65,6 +65,15 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto, actor: UserInterface) {
     const data = await this.findOne(id);
     if (!data) throw new NotFoundException();
+
+    const { password } = updateUserDto;
+    if (password) {
+      const round = parseInt(
+        this.configService.get<string>('SALT_ROUNDS') || '10',
+      );
+      updateUserDto.password = hashSync(password, round);
+    }
+
     return this.prisma.user.update({
       omit: {
         password: true,
