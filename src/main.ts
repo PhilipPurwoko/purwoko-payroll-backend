@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ResponseInterceptor } from './commons/response.interceptor';
 import { AllExceptionsFilter } from './commons/http-exception.filter';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { LoggingInterceptor } from './interceptor/logging.interceptor';
 import { AppLogger } from './interceptor/logger.service';
 
@@ -15,8 +15,14 @@ async function bootstrap() {
     new LoggingInterceptor(app.get(AppLogger)), // Logger
   );
 
-  // Global Exception Filter
   app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   app.setGlobalPrefix('/api');
   app.enableVersioning({
