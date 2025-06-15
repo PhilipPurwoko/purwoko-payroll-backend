@@ -14,7 +14,9 @@ export class UserService {
 
   create(createUserDto: CreateUserDto) {
     const { password, ...rest } = createUserDto;
-    const round = this.configService.get<number>('SALT_ROUNDS') || 10;
+    const round = parseInt(
+      this.configService.get<string>('SALT_ROUNDS') || '10',
+    );
     const passwordHash = hashSync(password, round);
     return this.prisma.user.create({
       omit: {
