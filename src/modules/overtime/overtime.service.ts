@@ -28,7 +28,9 @@ export class OvertimeService {
         },
       },
       include: {
-        attendancePeriod: { where: {status: Status.ongoing, deletedAt: null } },
+        attendancePeriod: {
+          where: { status: Status.ongoing, deletedAt: null },
+        },
       },
     });
     if (!attendance) throw new BadRequestException('Attendance not found');
@@ -37,6 +39,7 @@ export class OvertimeService {
       data: {
         ...createDto,
         userId: user.id,
+        createdBy: user.id,
       },
     });
   }
@@ -67,6 +70,7 @@ export class OvertimeService {
       data: {
         ...updateDto,
         updatedAt: new Date(),
+        updatedBy: user.id,
       },
       where: {
         id,
@@ -82,6 +86,7 @@ export class OvertimeService {
     return this.prisma.overtime.update({
       data: {
         deletedAt: new Date(),
+        deletedBy: user.id,
       },
       where: {
         id,

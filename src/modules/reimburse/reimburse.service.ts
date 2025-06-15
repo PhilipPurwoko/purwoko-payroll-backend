@@ -31,6 +31,7 @@ export class ReimburseService {
         ...createDto,
         userId: user.id,
         attendancePeriodId: attendancePeriod.id,
+        createdBy: user.id,
       },
     });
   }
@@ -61,6 +62,7 @@ export class ReimburseService {
       data: {
         ...updateDto,
         updatedAt: new Date(),
+        updatedBy: user.id,
       },
       where: {
         id,
@@ -75,6 +77,7 @@ export class ReimburseService {
     return this.prisma.reimbursement.update({
       data: {
         deletedAt: new Date(),
+        deletedBy: user.id,
       },
       where: {
         id,
