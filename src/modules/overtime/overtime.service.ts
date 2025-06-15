@@ -8,6 +8,7 @@ import { UpdateOvertimeDto } from './dto/update-overtime.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
 import { Status } from '@prisma/client';
+import { m } from '../../util/date.util';
 
 @Injectable()
 export class OvertimeService {
@@ -69,7 +70,7 @@ export class OvertimeService {
     return this.prisma.overtime.update({
       data: {
         ...updateDto,
-        updatedAt: new Date(),
+        updatedAt: m().utc().toDate(),
         updatedBy: user.id,
       },
       where: {
@@ -85,7 +86,7 @@ export class OvertimeService {
     if (!data) throw new NotFoundException();
     return this.prisma.overtime.update({
       data: {
-        deletedAt: new Date(),
+        deletedAt: m().utc().toDate(),
         deletedBy: user.id,
       },
       where: {

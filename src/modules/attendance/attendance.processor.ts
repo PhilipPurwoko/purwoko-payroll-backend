@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common';
 import { PayrollQueueInterface } from '../../interfaces/payrol_queue.interface';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Status } from '@prisma/client';
+import { m } from '../../util/date.util';
 
 @Processor('attendance')
 export class AttendanceProcessor {
@@ -14,7 +15,7 @@ export class AttendanceProcessor {
   @Process('process-attendance')
   async handle(job: Job) {
     try {
-      const now = new Date();
+      const now = m().utc().toDate();
 
       const queue = job.data as PayrollQueueInterface;
       this.logger.log(

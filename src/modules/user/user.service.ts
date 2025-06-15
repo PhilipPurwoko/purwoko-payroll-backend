@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { hashSync } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { UserInterface } from '../../interfaces/user.interface';
+import { m } from '../../util/date.util';
 
 @Injectable()
 export class UserService {
@@ -58,13 +59,6 @@ export class UserService {
         ],
         deletedAt: null,
       },
-      include: {
-        attendances: { where: { deletedAt: null } },
-        overtimes: { where: { deletedAt: null } },
-        reimbursements: { where: { deletedAt: null } },
-        payrolls: { where: { deletedAt: null } },
-        payslips: { where: { deletedAt: null } },
-      },
     });
   }
 
@@ -77,7 +71,7 @@ export class UserService {
       },
       data: {
         ...updateUserDto,
-        updatedAt: new Date(),
+        updatedAt: m().utc().toDate(),
         updatedBy: actor.id,
       },
       where: {
@@ -95,7 +89,7 @@ export class UserService {
         password: true,
       },
       data: {
-        deletedAt: new Date(),
+        deletedAt: m().utc().toDate(),
         deletedBy: actor.id,
       },
       where: {

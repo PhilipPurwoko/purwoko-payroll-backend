@@ -8,9 +8,9 @@ export class CreateAttendanceConfigurationDto {
   })
   @IsString()
   @Matches(/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/, {
-    message: 'startTime must be in HH:mm:ss format',
+    message: 'startAt must be in HH:mm:ss format',
   })
-  periodStartAt: string;
+  startAt: string;
 
   @ApiProperty({
     description: 'End time in HH:mm:ss format',
@@ -18,9 +18,9 @@ export class CreateAttendanceConfigurationDto {
   })
   @IsString()
   @Matches(/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/, {
-    message: 'endTime must be in HH:mm:ss format',
+    message: 'endAt must be in HH:mm:ss format',
   })
-  periodEndAt: string;
+  endAt: string;
 
   @ApiProperty({
     example: 50000,
