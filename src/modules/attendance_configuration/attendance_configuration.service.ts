@@ -1,8 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAttendanceConfigurationDto } from './dto/create-attendance_configuration.dto';
 import { UpdateAttendanceConfigurationDto } from './dto/update-attendance_configuration.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import moment from 'moment';
+import { parseTimeToDate } from '../../util/date.util';
 
 @Injectable()
 export class AttendanceConfigurationService {
@@ -10,26 +14,18 @@ export class AttendanceConfigurationService {
 
   create(createDto: CreateAttendanceConfigurationDto) {
     const { periodStartAt, periodEndAt, ...rest } = createDto;
+    const start = parseTimeToDate(periodStartAt);
+    const end = parseTimeToDate(periodEndAt);
 
-    if (!moment(periodStartAt, 'HH:mm:ss', true).isValid()) {
-      throw new BadRequestException('Invalid startTime format');
-    }
-    if (!moment(periodEndAt, 'HH:mm:ss', true).isValid()) {
-      throw new BadRequestException('Invalid endTime format');
-    }
-
-    const start = moment(periodStartAt, 'HH:mm:ss');
-    const end = moment(periodEndAt, 'HH:mm:ss');
-
-    if (!end.isAfter(start)) {
+    if (end <= start) {
       throw new BadRequestException('endTime must be after startTime');
     }
 
     return this.prisma.attendanceConfiguration.create({
       data: {
         ...rest,
-        periodStartAt: start.toDate(),
-        periodEndAt: end.toDate(),
+        periodStartAt: start,
+        periodEndAt: end,
       },
     });
   }
