@@ -22,12 +22,13 @@ export class OvertimeService {
         id: createDto.attendanceId,
         userId: user.id,
         deletedAt: null,
+        status: Status.completed,
         attendancePeriod: {
           status: Status.ongoing,
         },
       },
       include: {
-        attendancePeriod: true,
+        attendancePeriod: { where: {status: Status.ongoing, deletedAt: null } },
       },
     });
     if (!attendance) throw new BadRequestException('Attendance not found');

@@ -80,17 +80,19 @@ model AttendancePeriod {
 }
 
 model Attendance {
-  id                 String           @id @unique @default(uuid())
-  userId             String           @map("user_id")
-  checkInAt          DateTime         @map("start_at")
-  attendancePeriodId String           @map("attendance_period_id")
-  createdAt          DateTime         @default(now()) @map("created_at")
-  updatedAt          DateTime?        @updatedAt @map("updated_at")
-  deletedAt          DateTime?        @map("deleted_at")
-  createdBy          String?          @map("created_by")
-  deletedBy          String?          @map("deleted_by")
-  user               User             @relation(fields: [userId], references: [id])
-  attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
+  id                 String            @id @unique @default(uuid())
+  userId             String            @map("user_id")
+  checkInAt          DateTime          @map("start_at")
+  status             Status            @default(pending)
+  description        String?
+  attendancePeriodId String?           @map("attendance_period_id")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime?         @updatedAt @map("updated_at")
+  deletedAt          DateTime?         @map("deleted_at")
+  createdBy          String?           @map("created_by")
+  deletedBy          String?           @map("deleted_by")
+  user               User              @relation(fields: [userId], references: [id])
+  attendancePeriod   AttendancePeriod? @relation(fields: [attendancePeriodId], references: [id])
   Overtime           Overtime[]
 
   @@map(name: "attendances")

@@ -57,11 +57,11 @@ export class UserService {
         deletedAt: null,
       },
       include: {
-        attendances: true,
-        overtimes: true,
-        reimbursements: true,
-        payrolls: true,
-        payslips: true,
+        attendances: { where: { deletedAt: null } },
+        overtimes: { where: { deletedAt: null } },
+        reimbursements: { where: { deletedAt: null } },
+        payrolls: { where: { deletedAt: null } },
+        payslips: { where: { deletedAt: null } },
       },
     });
   }

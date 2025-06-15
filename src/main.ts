@@ -11,6 +11,7 @@ import { getQueueToken } from '@nestjs/bull';
 import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import * as basicAuth from 'express-basic-auth';
+import { BullAdapter } from '@bull-board/api/bullAdapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -37,17 +38,14 @@ async function bootstrap() {
 
   // Access NestJS queue instances
   const payrollQueue = app.get<Queue>(getQueueToken('payroll'));
+  const attendanceQueue = app.get<Queue>(getQueueToken('attendance'));
 
   // Setup Bull Board
   const serverAdapter = new ExpressAdapter();
   serverAdapter.setBasePath('/queues');
 
   createBullBoard({
-    queues: [
-      new (await import('@bull-board/api/bullAdapter')).BullAdapter(
-        payrollQueue,
-      ),
-    ],
+    queues: [new BullAdapter(payrollQueue), new BullAdapter(attendanceQueue)],
     serverAdapter,
   });
 
