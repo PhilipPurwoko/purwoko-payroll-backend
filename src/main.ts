@@ -4,12 +4,16 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ResponseInterceptor } from './commons/response.interceptor';
 import { AllExceptionsFilter } from './commons/http-exception.filter';
 import { VersioningType } from '@nestjs/common';
+import { LoggingInterceptor } from './interceptor/logging.interceptor';
+import { AppLogger } from './interceptor/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Global Response Interceptor
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(), // Response Standardization
+    new LoggingInterceptor(app.get(AppLogger)), // Logger
+  );
 
   // Global Exception Filter
   app.useGlobalFilters(new AllExceptionsFilter());

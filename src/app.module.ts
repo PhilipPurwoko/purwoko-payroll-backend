@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AttendanceModule } from './modules/attendance/attendance.module';
@@ -13,6 +13,9 @@ import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { RequestIdMiddleware } from './middleware/request-id.middleware';
+import { RequestContext } from './commons/request-context.service';
+import { AppLogger } from './interceptor/logger.service';
 
 @Module({
   imports: [
@@ -32,6 +35,11 @@ import { ConfigModule } from '@nestjs/config';
     AttendancePeriodModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RequestContext, AppLogger],
+  exports: [RequestContext, AppLogger],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
+  }
+}
