@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { hashSync } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { UserInterface } from '../../interfaces/user.interface';
+import { m } from '../../util/date.util';
 
 @Injectable()
 export class UserService {
@@ -12,9 +14,11 @@ export class UserService {
     private configService: ConfigService,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  create(createUserDto: CreateUserDto, actor: UserInterface) {
     const { password, ...rest } = createUserDto;
-    const round = this.configService.get<number>('SALT_ROUNDS') || 10;
+    const round = parseInt(
+      this.configService.get<string>('SALT_ROUNDS') || '10',
+    );
     const passwordHash = hashSync(password, round);
     return this.prisma.user.create({
       omit: {
@@ -23,6 +27,7 @@ export class UserService {
       data: {
         ...rest,
         password: passwordHash,
+        createdBy: actor.id,
       },
     });
   }
@@ -57,14 +62,26 @@ export class UserService {
     });
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto, actor: UserInterface) {
+    const data = await this.findOne(id);
+    if (!data) throw new NotFoundException();
+
+    const { password } = updateUserDto;
+    if (password) {
+      const round = parseInt(
+        this.configService.get<string>('SALT_ROUNDS') || '10',
+      );
+      updateUserDto.password = hashSync(password, round);
+    }
+
     return this.prisma.user.update({
       omit: {
         password: true,
       },
       data: {
         ...updateUserDto,
-        updatedAt: new Date(),
+        updatedAt: m().utc().toDate(),
+        updatedBy: actor.id,
       },
       where: {
         id,
@@ -73,13 +90,16 @@ export class UserService {
     });
   }
 
-  remove(id: string) {
+  async remove(id: string, actor: UserInterface) {
+    const data = await this.findOne(id);
+    if (!data) throw new NotFoundException();
     return this.prisma.user.update({
       omit: {
         password: true,
       },
       data: {
-        deletedAt: new Date(),
+        deletedAt: m().utc().toDate(),
+        deletedBy: actor.id,
       },
       where: {
         id,

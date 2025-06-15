@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
 import { User } from '@prisma/client';
+import { UserInterface } from '../../interfaces/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -22,12 +23,16 @@ export class AuthService {
 
   signJwt(user: User) {
     return {
-      access_token: this.jwtService.sign({
+      access_token: this.jwtService.sign(<UserInterface>{
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
       }),
     };
+  }
+
+  me(user: UserInterface) {
+    return this.userService.findOne(user.id, true);
   }
 }

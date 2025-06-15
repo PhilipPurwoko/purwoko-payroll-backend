@@ -1,28 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsNumber, IsPositive, IsString, Matches } from 'class-validator';
 
 export class CreateAttendanceConfigurationDto {
   @ApiProperty({
-    example: '2025-06-14T09:00:00.000Z',
-    description: 'Shift start timestamp (ISO format)',
+    description: 'Start time in HH:mm:ss format',
+    example: '08:00:00',
   })
-  @IsNotEmpty()
-  @Type(() => Date)
-  @IsDate({ message: 'periodStartAt must be a valid date' })
-  periodStartAt: Date;
+  @IsString()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/, {
+    message: 'startAt must be in HH:mm:ss format',
+  })
+  startAt: string;
 
   @ApiProperty({
-    example: '2025-06-14T17:00:00.000Z',
-    description: 'Shift end timestamp (ISO format)',
+    description: 'End time in HH:mm:ss format',
+    example: '17:30:00',
   })
-  @IsNotEmpty()
-  @Type(() => Date)
-  @IsDate({ message: 'periodEndAt must be a valid date' })
-  periodEndAt: Date;
+  @IsString()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/, {
+    message: 'endAt must be in HH:mm:ss format',
+  })
+  endAt: string;
 
   @ApiProperty({
-    example: 25.5,
+    example: 50000,
     description: 'Standard hourly pay rate',
   })
   @IsNumber()
@@ -30,7 +31,7 @@ export class CreateAttendanceConfigurationDto {
   hourlyRate: number;
 
   @ApiProperty({
-    example: 38.25,
+    example: 100000,
     description: 'Hourly pay rate for overtime',
   })
   @IsNumber()
@@ -38,7 +39,7 @@ export class CreateAttendanceConfigurationDto {
   overtimeRate: number;
 
   @ApiProperty({
-    example: 1.5,
+    example: 2.0,
     description: 'Overtime multiplier applied to hourly rate',
   })
   @IsNumber()

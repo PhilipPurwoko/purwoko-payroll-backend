@@ -1,26 +1,79 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePayrollDto } from './dto/create-payroll.dto';
-import { UpdatePayrollDto } from './dto/update-payroll.dto';
+import { UserInterface } from '../../interfaces/user.interface';
+import { InjectQueue } from '@nestjs/bull';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Queue } from 'bull';
+import { Role, Status } from '@prisma/client';
 
 @Injectable()
 export class PayrollService {
-  create(createPayrollDto: CreatePayrollDto) {
-    return 'This action adds a new payroll';
+  constructor(
+    @InjectQueue('payroll') private queue: Queue,
+    private prisma: PrismaService,
+  ) {}
+
+  async create(createPayrollDto: CreatePayrollDto, user: UserInterface) {
+    const attendancePeriod = await this.prisma.attendancePeriod.findFirst({
+      where: {
+        id: createPayrollDto.attendancePeriodId,
+        status: Status.ongoing,
+        deletedAt: null,
+        attendanceConfiguration: {
+          deletedAt: null,
+        },
+      },
+      include: {
+        attendanceConfiguration: { where: { deletedAt: null } },
+      },
+    });
+    if (!attendancePeriod) {
+      throw new BadRequestException('Attendance period not found');
+    }
+
+    const employees = await this.prisma.user.findMany({
+      where: {
+        role: Role.employee,
+        deletedAt: null,
+      },
+    });
+
+    for (const employee of employees) {
+      await this.queue.add('process-payroll', {
+        actor: user,
+        attendancePeriod: attendancePeriod,
+        employee: employee,
+      });
+    }
+
+    await this.prisma.attendancePeriod.update({
+      where: {
+        id: createPayrollDto.attendancePeriodId,
+      },
+      data: {
+        status: Status.completed,
+        updatedBy: user.id,
+      },
+    });
+
+    return `Successfully running payroll for ${employees.length} employees`;
   }
 
-  findAll() {
-    return `This action returns all payroll`;
+  findAll(attendancePeriodId: string) {
+    return this.prisma.payroll.findMany({
+      where: {
+        attendancePeriodId: attendancePeriodId,
+        deletedAt: null,
+      },
+    });
   }
 
   findOne(id: string) {
-    return `This action returns a #${id} payroll`;
-  }
-
-  update(id: string, updatePayrollDto: UpdatePayrollDto) {
-    return `This action updates a #${id} payroll`;
-  }
-
-  remove(id: string) {
-    return `This action removes a #${id} payroll`;
+    return this.prisma.payroll.findFirst({
+      where: {
+        id: id,
+        deletedAt: null,
+      },
+    });
   }
 }

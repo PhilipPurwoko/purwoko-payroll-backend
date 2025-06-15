@@ -1,34 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { SummaryService } from './summary.service';
-import { CreateSummaryDto } from './dto/create-summary.dto';
-import { UpdateSummaryDto } from './dto/update-summary.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { RoleGuard } from '../auth/guard/role.guard';
+import { Roles } from '../auth/decorator/role.decorator';
 
 @Controller('summary')
 export class SummaryController {
   constructor(private readonly summaryService: SummaryService) {}
 
-  @Post()
-  create(@Body() createSummaryDto: CreateSummaryDto) {
-    return this.summaryService.create(createSummaryDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.summaryService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.summaryService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSummaryDto: UpdateSummaryDto) {
-    return this.summaryService.update(id, updateSummaryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.summaryService.remove(id);
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('admin')
+  @Get(':attendancePeriodId')
+  findAll(@Param('attendancePeriodId') attendancePeriodId: string) {
+    return this.summaryService.findAll(attendancePeriodId);
   }
 }

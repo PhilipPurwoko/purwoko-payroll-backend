@@ -1,26 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { CreateSummaryDto } from './dto/create-summary.dto';
-import { UpdateSummaryDto } from './dto/update-summary.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class SummaryService {
-  create(createSummaryDto: CreateSummaryDto) {
-    return 'This action adds a new summary';
-  }
+  constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return `This action returns all summary`;
-  }
+  async findAll(attendancePeriodId: string) {
+    const attendancePeriod = await this.prisma.attendancePeriod.findFirst({
+      where: {
+        id: attendancePeriodId,
+        deletedAt: null,
+      },
+    });
+    if (!attendancePeriod) {
+      throw new NotFoundException('Attendance period not found');
+    }
 
-  findOne(id: string) {
-    return `This action returns a #${id} summary`;
-  }
+    const allPayslips = await this.prisma.user.findMany({
+      include: {
+        payslips: {
+          where: {
+            attendancePeriodId: attendancePeriodId,
+            deletedAt: null,
+          },
+        },
+      },
+      where: {
+        role: Role.employee,
+        deletedAt: null,
+      },
+    });
 
-  update(id: string, updateSummaryDto: UpdateSummaryDto) {
-    return `This action updates a #${id} summary`;
-  }
+    const totalTakeHomePayAmount = allPayslips.reduce(
+      (total, employee) =>
+        total +
+        (employee.payslips.reduce(
+          (total, payslip) => total + (payslip.takeHomePay ?? 0),
+          0,
+        ) ?? 0),
+      0,
+    );
 
-  remove(id: string) {
-    return `This action removes a #${id} summary`;
+    return {
+      attendancePeriod: attendancePeriod,
+      totalTakeHomePayAmount: totalTakeHomePayAmount,
+      employees: allPayslips,
+    };
   }
 }

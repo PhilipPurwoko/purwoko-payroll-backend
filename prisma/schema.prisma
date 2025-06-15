@@ -7,16 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum PayrollStatus {
+enum Status {
   pending
-  processing
-  completed
-  failed
-}
-
-enum ReimbursementStatus {
-  pending
-  processing
+  ongoing
   completed
   failed
 }
@@ -27,31 +20,32 @@ enum Role {
 }
 
 model User {
-  id            String          @id @unique @default(uuid())
-  name          String          @db.VarChar(255)
-  email         String          @db.VarChar(255)
-  password      String
-  role          Role
-  isActive      Boolean         @default(true) @map("is_active")
-  createdAt     DateTime        @default(now()) @map("created_at")
-  updatedAt     DateTime?       @updatedAt @map("updated_at")
-  deletedAt     DateTime?       @map("deleted_at")
-  createdBy     String?         @map("created_by")
-  deletedBy     String?         @map("deleted_by")
-  payrolls      Payroll[]
-  Attendance    Attendance[]
-  Overtime      Overtime[]
-  Reimbursement Reimbursement[]
-  Payslip       Payslip[]
-  AuditLog      AuditLog[]
+  id             String          @id @unique @default(uuid())
+  name           String          @db.VarChar(255)
+  email          String          @db.VarChar(255)
+  password       String
+  role           Role
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime?       @updatedAt @map("updated_at")
+  deletedAt      DateTime?       @map("deleted_at")
+  createdBy      String?         @map("created_by")
+  updatedBy      String?         @map("updated_by")
+  deletedBy      String?         @map("deleted_by")
+  payrolls       Payroll[]
+  attendances    Attendance[]
+  overtimes      Overtime[]
+  reimbursements Reimbursement[]
+  payslips       Payslip[]
+  auditLogs      AuditLog[]
 
   @@map(name: "users")
 }
 
 model AttendanceConfiguration {
   id                 String             @id @unique @default(uuid())
-  periodStartAt      DateTime?          @map("period_start_at")
-  periodEndAt        DateTime?          @map("period_end_at")
+  startAt            DateTime?          @map("start_at") @db.Time
+  endAt              DateTime?          @map("end_at") @db.Time
   hourlyRate         Int?               @map("hourly_rate")
   overtimeRate       Int?               @map("overtime_rate")
   overtimeMultiplier Decimal?           @map("overtime_multiplier")
@@ -60,6 +54,7 @@ model AttendanceConfiguration {
   updatedAt          DateTime?          @updatedAt @map("updated_at")
   deletedAt          DateTime?          @map("deleted_at")
   createdBy          String?            @map("created_by")
+  updatedBy          String?            @map("updated_by")
   deletedBy          String?            @map("deleted_by")
   AttendancePeriod   AttendancePeriod[]
 
@@ -71,67 +66,78 @@ model AttendancePeriod {
   startAt                   DateTime?                @map("start_at")
   endAt                     DateTime?                @map("end_at")
   attendanceConfigurationId String                   @map("attendance_configuration_id")
+  status                    Status                   @default(ongoing)
   createdAt                 DateTime                 @default(now()) @map("created_at")
   updatedAt                 DateTime?                @updatedAt @map("updated_at")
   deletedAt                 DateTime?                @map("deleted_at")
   createdBy                 String?                  @map("created_by")
+  updatedBy                 String?                  @map("updated_by")
   deletedBy                 String?                  @map("deleted_by")
   attendanceConfiguration   AttendanceConfiguration? @relation(fields: [attendanceConfigurationId], references: [id])
-  Attendance                Attendance[]
-  Reimbursement             Reimbursement[]
-  Payroll                   Payroll[]
-  PayslipSumary             PayslipSumary[]
+  payrolls                  Payroll[]
+  attendances               Attendance[]
+  overtimes                 Overtime[]
+  reimbursements            Reimbursement[]
+  payslips                  Payslip[]
+  payslipSumaries           PayslipSumary[]
 
   @@map(name: "attendance_periods")
 }
 
 model Attendance {
-  id                 String           @id @unique @default(uuid())
-  userId             String           @map("user_id")
-  checkInAt          DateTime         @map("start_at")
-  attendancePeriodId String           @map("attendance_period_id")
-  createdAt          DateTime         @default(now()) @map("created_at")
-  updatedAt          DateTime?        @updatedAt @map("updated_at")
-  deletedAt          DateTime?        @map("deleted_at")
-  createdBy          String?          @map("created_by")
-  deletedBy          String?          @map("deleted_by")
-  user               User             @relation(fields: [userId], references: [id])
-  attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
+  id                 String            @id @unique @default(uuid())
+  userId             String            @map("user_id")
+  checkInAt          DateTime          @map("start_at")
+  status             Status            @default(pending)
+  description        String?
+  attendancePeriodId String?           @map("attendance_period_id")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime?         @updatedAt @map("updated_at")
+  deletedAt          DateTime?         @map("deleted_at")
+  createdBy          String?           @map("created_by")
+  updatedBy          String?           @map("updated_by")
+  deletedBy          String?           @map("deleted_by")
+  user               User              @relation(fields: [userId], references: [id])
+  attendancePeriod   AttendancePeriod? @relation(fields: [attendancePeriodId], references: [id])
   Overtime           Overtime[]
 
   @@map(name: "attendances")
 }
 
 model Overtime {
-  id           String     @id @unique @default(uuid())
-  userId       String     @map("user_id")
-  hoursTaken   Int?       @map("hours_taken")
-  attendanceId String     @map("attendance_id")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime?  @updatedAt @map("updated_at")
-  deletedAt    DateTime?  @map("deleted_at")
-  createdBy    String?    @map("created_by")
-  deletedBy    String?    @map("deleted_by")
-  user         User       @relation(fields: [userId], references: [id])
-  attendance   Attendance @relation(fields: [attendanceId], references: [id])
+  id                 String            @id @unique @default(uuid())
+  userId             String            @map("user_id")
+  hoursTaken         Int?              @map("hours_taken")
+  attendanceId       String            @map("attendance_id")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime?         @updatedAt @map("updated_at")
+  deletedAt          DateTime?         @map("deleted_at")
+  createdBy          String?           @map("created_by")
+  updatedBy          String?           @map("updated_by")
+  deletedBy          String?           @map("deleted_by")
+  user               User              @relation(fields: [userId], references: [id])
+  attendance         Attendance        @relation(fields: [attendanceId], references: [id])
+  AttendancePeriod   AttendancePeriod? @relation(fields: [attendancePeriodId], references: [id])
+  attendancePeriodId String?           @map("attendance_period_id")
 
   @@map(name: "overtimes")
 }
 
 model Reimbursement {
-  id                 String              @id @unique @default(uuid())
-  userId             String              @map("user_id")
+  id                 String           @id @unique @default(uuid())
+  userId             String           @map("user_id")
   amount             Int?
   description        String?
-  status             ReimbursementStatus @default(pending)
-  attendancePeriodId String              @map("attendance_period_id")
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime?           @updatedAt @map("updated_at")
-  deletedAt          DateTime?           @map("deleted_at")
-  createdBy          String?             @map("created_by")
-  deletedBy          String?             @map("deleted_by")
-  user               User                @relation(fields: [userId], references: [id])
-  attendancePeriod   AttendancePeriod    @relation(fields: [attendancePeriodId], references: [id])
+  status             Status           @default(pending)
+  attendancePeriodId String           @map("attendance_period_id")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime?        @updatedAt @map("updated_at")
+  deletedAt          DateTime?        @map("deleted_at")
+  createdBy          String?          @map("created_by")
+  updatedBy          String?          @map("updated_by")
+  deletedBy          String?          @map("deleted_by")
+  user               User             @relation(fields: [userId], references: [id])
+  attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
 
   @@map(name: "reimbursements")
 }
@@ -140,12 +146,13 @@ model Payroll {
   id                 String           @id @unique @default(uuid())
   userId             String           @map("user_id")
   amount             Int?
-  status             PayrollStatus    @default(pending)
+  status             Status           @default(completed)
   attendancePeriodId String           @map("attendance_period_id")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime?        @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
   createdBy          String?          @map("created_by")
+  updatedBy          String?          @map("updated_by")
   deletedBy          String?          @map("deleted_by")
   user               User             @relation(fields: [userId], references: [id])
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
@@ -155,17 +162,33 @@ model Payroll {
 }
 
 model Payslip {
-  id        String    @id @unique @default(uuid())
-  userId    String    @map("user_id")
-  url       String    @map("url")
-  payrollId String    @map("payroll_id")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  deletedBy String?   @map("deleted_by")
-  Payroll   Payroll   @relation(fields: [payrollId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
+  id                       String           @id @unique @default(uuid())
+  userId                   String           @map("user_id")
+  attendancePeriodId       String           @map("attendance_period_id")
+  url                      String?          @map("url")
+  status                   Status           @default(pending)
+  overtimeMultiplier       Decimal?         @map("overtime_multiplier")
+  takeHomePay              Int?             @map("take_home_pay")
+  totalAttendanceAmount    Int?             @map("total_attendance_amount")
+  totalOvertimeAmount      Int?             @map("total_overtime_amount")
+  totalReimbursementAmount Int?             @map("total_reimbursement_amount")
+  totalAttendance          Int?             @map("total_attendance")
+  totalAttendanceHours     Int?             @map("total_attendance_hours")
+  totalOvertime            Int?             @map("total_overtime")
+  totalOvertimeHours       Int?             @map("total_overtime_hours")
+  hoursPerDay              Int?             @map("hours_per_day")
+  hourlyRate               Int?             @map("hourly_rate")
+  overtimeRate             Int?             @map("overtime_rate")
+  payrollId                String           @map("payroll_id")
+  createdAt                DateTime         @default(now()) @map("created_at")
+  updatedAt                DateTime?        @updatedAt @map("updated_at")
+  deletedAt                DateTime?        @map("deleted_at")
+  createdBy                String?          @map("created_by")
+  updatedBy                String?          @map("updated_by")
+  deletedBy                String?          @map("deleted_by")
+  payroll                  Payroll          @relation(fields: [payrollId], references: [id])
+  user                     User             @relation(fields: [userId], references: [id])
+  attendancePeriod         AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
 
   @@map(name: "payslips")
 }
@@ -178,6 +201,7 @@ model PayslipSumary {
   updatedAt          DateTime?        @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
   createdBy          String?          @map("created_by")
+  updatedBy          String?          @map("updated_by")
   deletedBy          String?          @map("deleted_by")
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
 
@@ -186,11 +210,12 @@ model PayslipSumary {
 
 model AuditLog {
   id          String    @id @unique @default(uuid())
-  userId      String    @map("user_id")
+  userId      String?   @map("user_id")
   requestId   String?   @map("request_id")
+  ipAddress   String?   @map("ip_address")
   action      String?   @map("action")
   description String?   @map("description")
-  table       String?   @map("table")
+  endpoint    String?   @map("endpoint")
   dto         Json?     @map("dto")
   dataBefore  Json?     @map("data_before")
   dataAfter   Json?     @map("data_after")
@@ -198,8 +223,9 @@ model AuditLog {
   updatedAt   DateTime? @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
   createdBy   String?   @map("created_by")
+  updatedBy   String?   @map("updated_by")
   deletedBy   String?   @map("deleted_by")
-  user        User      @relation(fields: [userId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id])
 
   @@map(name: "audit_logs")
 }

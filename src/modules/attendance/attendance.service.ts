@@ -1,26 +1,55 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAttendanceDto } from './dto/create-attendance.dto';
-import { UpdateAttendanceDto } from './dto/update-attendance.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { UserInterface } from '../../interfaces/user.interface';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Status } from '@prisma/client';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { m } from 'src/util/date.util';
 
 @Injectable()
 export class AttendanceService {
-  create(createAttendanceDto: CreateAttendanceDto) {
-    return 'This action adds a new attendance';
+  constructor(
+    @InjectQueue('attendance') private queue: Queue,
+    private prisma: PrismaService,
+  ) {}
+
+  async create(user: UserInterface) {
+    // Validate weekend day, 0 = Sunday, 6 = Saturday
+    const now = m().utc().toDate();
+    const day = now.getDay();
+    if (day === 0 || day === 6) {
+      throw new BadRequestException('Not allowed during weekends');
+    }
+
+    await this.queue.add('process-attendance', {
+      actor: user,
+    });
+
+    return `Attendance has been submitted`;
   }
 
-  findAll() {
-    return `This action returns all attendance`;
+  findAll(user: UserInterface) {
+    return this.prisma.attendance.findMany({
+      where: {
+        userId: user.id,
+        deletedAt: null,
+      },
+      include: {
+        attendancePeriod: { where: { deletedAt: null } },
+      },
+    });
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} attendance`;
-  }
-
-  update(id: string, updateAttendanceDto: UpdateAttendanceDto) {
-    return `This action updates a #${id} attendance`;
-  }
-
-  remove(id: string) {
-    return `This action removes a #${id} attendance`;
+  findOne(id: string, user: UserInterface) {
+    return this.prisma.attendance.findFirst({
+      where: {
+        id,
+        userId: user.id,
+        deletedAt: null,
+        attendancePeriod: {
+          status: Status.ongoing,
+        },
+      },
+    });
   }
 }

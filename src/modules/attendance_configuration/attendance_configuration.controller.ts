@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AttendanceConfigurationService } from './attendance_configuration.service';
@@ -15,6 +16,8 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { RoleGuard } from '../auth/guard/role.guard';
 import { Roles } from '../auth/decorator/role.decorator';
+import { Request } from 'express';
+import { UserInterface } from '../../interfaces/user.interface';
 
 @Controller('attendance-configuration')
 export class AttendanceConfigurationController {
@@ -27,10 +30,12 @@ export class AttendanceConfigurationController {
   @Roles('admin')
   @Post()
   create(
+    @Req() req: Request,
     @Body() createAttendanceConfigurationDto: CreateAttendanceConfigurationDto,
   ) {
     return this.attendanceConfigurationService.create(
       createAttendanceConfigurationDto,
+      req.user as UserInterface,
     );
   }
 
@@ -55,12 +60,14 @@ export class AttendanceConfigurationController {
   @Roles('admin')
   @Patch(':id')
   update(
+    @Req() req: Request,
     @Param('id') id: string,
     @Body() updateAttendanceConfigurationDto: UpdateAttendanceConfigurationDto,
   ) {
     return this.attendanceConfigurationService.update(
       id,
       updateAttendanceConfigurationDto,
+      req.user as UserInterface,
     );
   }
 
@@ -68,7 +75,10 @@ export class AttendanceConfigurationController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('admin')
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.attendanceConfigurationService.remove(id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    return this.attendanceConfigurationService.remove(
+      id,
+      req.user as UserInterface,
+    );
   }
 }
