@@ -1,26 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePayslipDto } from './dto/create-payslip.dto';
-import { UpdatePayslipDto } from './dto/update-payslip.dto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { UserInterface } from '../../interfaces/user.interface';
 
 @Injectable()
 export class PayslipService {
-  create(createPayslipDto: CreatePayslipDto) {
-    return 'This action adds a new payslip';
+  constructor(private prisma: PrismaService) {}
+
+  findAll(user: UserInterface) {
+    return this.prisma.payslip.findMany({
+      include: {
+        attendancePeriod: true,
+      },
+      where: {
+        userId: user.id,
+        deletedAt: null,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all payslip`;
-  }
-
-  findOne(id: string) {
-    return `This action returns a #${id} payslip`;
-  }
-
-  update(id: string, updatePayslipDto: UpdatePayslipDto) {
-    return `This action updates a #${id} payslip`;
-  }
-
-  remove(id: string) {
-    return `This action removes a #${id} payslip`;
+  findOne(id: string, user: UserInterface) {
+    return this.prisma.payslip.findFirst({
+      include: {
+        attendancePeriod: {
+          include: {
+            attendances: { where: { userId: user.id, deletedAt: null } },
+            overtimes: { where: { userId: user.id, deletedAt: null } },
+            reimbursements: { where: { userId: user.id, deletedAt: null } },
+          },
+        },
+      },
+      where: {
+        id: id,
+        userId: user.id,
+        deletedAt: null,
+      },
+    });
   }
 }
