@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { PayrollService } from './payroll.service';
 import { CreatePayrollDto } from './dto/create-payroll.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -21,5 +29,21 @@ export class PayrollController {
       createPayrollDto,
       req.user as UserInterface,
     );
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('admin')
+  @Get(':attendancePeriodId')
+  findAll(@Param('attendancePeriodId') attendancePeriodId: string) {
+    return this.payrollService.findAll(attendancePeriodId);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('admin')
+  @Get('/detail/:id')
+  findOne(@Param('id') id: string) {
+    return this.payrollService.findOne(id);
   }
 }

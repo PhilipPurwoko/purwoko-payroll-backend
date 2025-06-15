@@ -58,4 +58,22 @@ export class PayrollService {
 
     return `Successfully running payroll for ${employees.length} employees`;
   }
+
+  findAll(attendancePeriodId: string) {
+    return this.prisma.payroll.findMany({
+      where: {
+        attendancePeriodId: attendancePeriodId,
+        deletedAt: null,
+      },
+    });
+  }
+
+  findOne(id: string) {
+    return this.prisma.payroll.findFirst({
+      where: {
+        id: id,
+        deletedAt: null,
+      },
+    });
+  }
 }
