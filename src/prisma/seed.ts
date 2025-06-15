@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
 import { v4 } from 'uuid';
 import { PrismaClient, User } from '@prisma/client';
+import { m, parseTimeToDate } from '../util/date.util';
 import { convertToEmail, getRandomName } from './name';
 
 dotenv.config();
@@ -11,6 +12,7 @@ const prisma: PrismaClient = new PrismaClient();
 async function main() {
   console.log('[SEEDER] START');
 
+  const now = m();
   const round = parseInt(process.env.SALT_ROUNDS || '10');
   const masterPassword = process.env.MASTER_PASSWORD || 'password';
   const masterHashedPassword = bcrypt.hashSync(masterPassword, round);
@@ -23,8 +25,8 @@ async function main() {
       password: masterHashedPassword,
       role: 'admin',
       isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now.utc().toDate(),
+      updatedAt: now.utc().toDate(),
       updatedBy: null,
       deletedAt: null,
       createdBy: null,
@@ -45,8 +47,8 @@ async function main() {
       password: hashedPassword,
       role: 'employee',
       isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now.utc().toDate(),
+      updatedAt: now.utc().toDate(),
       updatedBy: null,
       deletedAt: null,
       createdBy: null,
@@ -56,6 +58,44 @@ async function main() {
 
   await prisma.user.createMany({
     data: users,
+  });
+
+  const startHour = parseTimeToDate('09:00:00');
+  const endHour = parseTimeToDate('17:00:00');
+
+  const attendanceConfigurationId = await prisma.attendanceConfiguration.create(
+    {
+      data: {
+        hourlyRate: 200000,
+        overtimeRate: 400000,
+        overtimeMultiplier: 2.0,
+        startAt: startHour.utc().toDate(),
+        endAt: endHour.utc().toDate(),
+        createdAt: now.utc().toDate(),
+        updatedAt: now.utc().toDate(),
+        updatedBy: null,
+        deletedAt: null,
+        createdBy: null,
+        deletedBy: null,
+      },
+    },
+  );
+
+  const firstDate = now.clone().startOf('month');
+  const lastDate = now.clone().endOf('month');
+
+  await prisma.attendancePeriod.create({
+    data: {
+      startAt: firstDate.utc().toDate(),
+      endAt: lastDate.utc().toDate(),
+      attendanceConfigurationId: attendanceConfigurationId.id,
+      createdAt: now.utc().toDate(),
+      updatedAt: now.utc().toDate(),
+      updatedBy: null,
+      deletedAt: null,
+      createdBy: null,
+      deletedBy: null,
+    },
   });
   console.log('[SEEDER] END');
 }
