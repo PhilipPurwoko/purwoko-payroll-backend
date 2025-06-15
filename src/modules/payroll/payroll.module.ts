@@ -10,6 +10,7 @@ import { PayrollProcessor } from './payroll.processor';
       name: 'payroll',
       defaultJobOptions: {
         attempts: 3,
+        removeOnComplete: true,
         backoff: {
           type: 'exponential',
           delay: 5000,
