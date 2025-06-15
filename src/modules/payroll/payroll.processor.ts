@@ -12,10 +12,12 @@ export class PayrollProcessor {
   private readonly logger = new Logger(PayrollProcessor.name);
 
   @Process('process-payroll')
-  async handlePayroll(job: Job) {
+  async handle(job: Job) {
     try {
       const queue = job.data as PayrollQueueInterface;
-      this.logger.log(`Processing payroll for: ${queue.employee.email}`);
+      this.logger.log(
+        `[${job.id}][Payroll] Processing: ${queue.employee.email}`,
+      );
 
       const employee = await this.prisma.user.findFirst({
         where: {
@@ -23,15 +25,20 @@ export class PayrollProcessor {
           deletedAt: null,
         },
         include: {
-          attendances: true,
-          overtimes: true,
-          reimbursements: true,
+          attendances: {
+            where: {
+              status: Status.completed,
+              deletedAt: null,
+            },
+          },
+          overtimes: { where: { deletedAt: null } },
+          reimbursements: { where: { deletedAt: null } },
         },
       });
 
       if (!employee) {
         this.logger.warn(
-          `[${job.id}] Queue Skipped. User not found: ${queue.employee.id}`,
+          `[${job.id}][Payroll] Skipped. User not found: ${queue.employee.id}`,
         );
         return;
       }
@@ -50,7 +57,7 @@ export class PayrollProcessor {
       const hoursPerDay = diffMs / (1000 * 60 * 60);
 
       // Calculate total hours
-      const totalAttendance = employee.attendances.length;
+      const totalAttendance = employee?.attendances?.length ?? 0;
       const totalAttendanceHours = totalAttendance * hoursPerDay;
       const totalOvertimeHours = employee.overtimes.reduce(
         (prev, next) => prev + (next.hoursTaken ?? 0),
@@ -95,10 +102,10 @@ export class PayrollProcessor {
           createdBy: queue.actor.id,
         },
       });
-      this.logger.log(`Processing payroll success: ${queue.employee.email}`);
+      this.logger.log(`[${job.id}][Payroll] success: ${queue.employee.email}`);
     } catch (error) {
       // Throwing exception will trigger retry
-      this.logger.error(`Payroll failed: ${error}`);
+      this.logger.error(`[${job.id}][Payroll] Failed: ${error}`);
       throw error;
     }
   }

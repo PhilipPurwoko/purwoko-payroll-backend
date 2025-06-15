@@ -19,9 +19,12 @@ export class PayrollService {
         id: createPayrollDto.attendancePeriodId,
         status: Status.ongoing,
         deletedAt: null,
+        attendanceConfiguration: {
+          deletedAt: null,
+        },
       },
       include: {
-        attendanceConfiguration: true,
+        attendanceConfiguration: { where: { deletedAt: null } },
       },
     });
     if (!attendancePeriod) {

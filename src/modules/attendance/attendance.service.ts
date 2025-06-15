@@ -2,59 +2,29 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserInterface } from '../../interfaces/user.interface';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Status } from '@prisma/client';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class AttendanceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectQueue('attendance') private queue: Queue,
+    private prisma: PrismaService,
+  ) {}
 
   async create(user: UserInterface) {
-    const now = new Date();
-
     // Validate weekend day, 0 = Sunday, 6 = Saturday
+    const now = new Date();
     const day = now.getDay();
     if (day === 0 || day === 6) {
       throw new BadRequestException('Not allowed during weekends');
     }
 
-    const attendancePeriod = await this.prisma.attendancePeriod.findFirst({
-      where: {
-        startAt: { lte: now },
-        endAt: { gte: now },
-        status: Status.ongoing,
-        deletedAt: null,
-      },
-    });
-    if (!attendancePeriod) {
-      throw new BadRequestException('Attendance period not found');
-    }
-
-    // Validate if user already submitted
-    const startOfDay = new Date(now);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(now);
-    endOfDay.setHours(23, 59, 59, 999);
-    const existingAttendance = await this.prisma.attendance.findFirst({
-      where: {
-        userId: user.id,
-        checkInAt: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-      },
+    await this.queue.add('process-attendance', {
+      actor: user,
     });
 
-    if (existingAttendance) {
-      throw new BadRequestException('Attendance already submitted today.');
-    }
-
-    return this.prisma.attendance.create({
-      data: {
-        userId: user.id,
-        checkInAt: now,
-        attendancePeriodId: attendancePeriod.id,
-      },
-    });
+    return `Attendance has been submitted`;
   }
 
   findAll(user: UserInterface) {
@@ -62,12 +32,9 @@ export class AttendanceService {
       where: {
         userId: user.id,
         deletedAt: null,
-        attendancePeriod: {
-          status: Status.ongoing,
-        },
       },
       include: {
-        attendancePeriod: true,
+        attendancePeriod: { where: { deletedAt: null } },
       },
     });
   }
