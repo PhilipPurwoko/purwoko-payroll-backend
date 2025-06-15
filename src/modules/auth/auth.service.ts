@@ -31,4 +31,8 @@ export class AuthService {
       }),
     };
   }
+
+  me(user: UserInterface) {
+    return this.userService.findOne(user.id, true);
+  }
 }
