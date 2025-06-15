@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common';
 import { PayrollQueueInterface } from '../../interfaces/payrol_queue.interface';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Status } from '@prisma/client';
+import { m } from '../../util/date.util';
 
 @Processor('payroll')
 export class PayrollProcessor {
@@ -44,20 +45,25 @@ export class PayrollProcessor {
       }
 
       const config = queue.attendancePeriod.attendanceConfiguration;
-      const configPeriodStartAt = new Date(
-        (config.startAt as string | null) ?? '',
-      );
-      const configPeriodEndAt = new Date((config.endAt as string | null) ?? '');
+      const configPeriodStartAt = config.startAt
+        ? m(config.startAt, 'HH:mm:ss')
+        : null;
+
+      const configPeriodEndAt = config.endAt
+        ? m(config.endAt, 'HH:mm:ss')
+        : null;
 
       // Get hours per day
-      const diffMs =
-        configPeriodEndAt.getTime() - configPeriodStartAt.getTime();
-      const hoursPerDay = diffMs / (1000 * 60 * 60);
+      const hoursPerDay = configPeriodEndAt?.diff(
+        configPeriodStartAt,
+        'hours',
+        true,
+      );
 
       // Calculate total hours
       const totalAttendance = employee?.attendances?.length ?? 0;
       const totalOvertime = employee?.overtimes?.length ?? 0;
-      const totalAttendanceHours = totalAttendance * hoursPerDay;
+      const totalAttendanceHours = totalAttendance * (hoursPerDay ?? 0);
       const totalOvertimeHours = employee.overtimes.reduce(
         (prev, next) => prev + (next.hoursTaken ?? 0),
         0,

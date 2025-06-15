@@ -15,7 +15,7 @@ export class AttendanceProcessor {
   @Process('process-attendance')
   async handle(job: Job) {
     try {
-      const now = m().utc().toDate();
+      const now = m();
 
       const queue = job.data as PayrollQueueInterface;
       this.logger.log(
@@ -24,8 +24,8 @@ export class AttendanceProcessor {
 
       const attendancePeriod = await this.prisma.attendancePeriod.findFirst({
         where: {
-          startAt: { lte: now },
-          endAt: { gte: now },
+          startAt: { lte: now.utc().toDate() },
+          endAt: { gte: now.utc().toDate() },
           status: Status.ongoing,
           deletedAt: null,
         },
@@ -37,7 +37,7 @@ export class AttendanceProcessor {
         await this.prisma.attendance.create({
           data: {
             userId: queue.actor.id,
-            checkInAt: now,
+            checkInAt: now.utc().toDate(),
             status: Status.failed,
             description: 'AttendancePeriod not found',
             createdBy: queue.actor.id,
@@ -47,11 +47,8 @@ export class AttendanceProcessor {
       }
 
       // Validate if user already submitted
-      const startOfDay = new Date(now);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(now);
-      endOfDay.setHours(23, 59, 59, 999);
+      const startOfDay = now.clone().startOf('day').toDate();
+      const endOfDay = now.clone().endOf('day').toDate();
       const existingAttendance = await this.prisma.attendance.findFirst({
         where: {
           userId: queue.actor.id,
@@ -73,7 +70,7 @@ export class AttendanceProcessor {
       await this.prisma.attendance.create({
         data: {
           userId: queue.actor.id,
-          checkInAt: now,
+          checkInAt: now.utc().toDate(),
           attendancePeriodId: attendancePeriod.id,
           status: Status.completed,
           description: 'Successfully checked in',
