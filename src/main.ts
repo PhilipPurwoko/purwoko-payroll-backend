@@ -12,6 +12,8 @@ import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import * as basicAuth from 'express-basic-auth';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
+import { AuditInterceptor } from './commons/audit.interceptor';
+import { AppService } from './app.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +21,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ResponseInterceptor(), // Response Standardization
     new LoggingInterceptor(app.get(AppLogger)), // Logger
+    new AuditInterceptor(app.get(AppService)), // Audit Log
   );
 
   app.useGlobalFilters(new AllExceptionsFilter());

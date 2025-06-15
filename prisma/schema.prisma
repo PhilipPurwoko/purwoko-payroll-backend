@@ -30,6 +30,7 @@ model User {
   updatedAt      DateTime?       @updatedAt @map("updated_at")
   deletedAt      DateTime?       @map("deleted_at")
   createdBy      String?         @map("created_by")
+  updatedBy      String?         @map("updated_by")
   deletedBy      String?         @map("deleted_by")
   payrolls       Payroll[]
   attendances    Attendance[]
@@ -53,6 +54,7 @@ model AttendanceConfiguration {
   updatedAt          DateTime?          @updatedAt @map("updated_at")
   deletedAt          DateTime?          @map("deleted_at")
   createdBy          String?            @map("created_by")
+  updatedBy          String?            @map("updated_by")
   deletedBy          String?            @map("deleted_by")
   AttendancePeriod   AttendancePeriod[]
 
@@ -69,6 +71,7 @@ model AttendancePeriod {
   updatedAt                 DateTime?                @updatedAt @map("updated_at")
   deletedAt                 DateTime?                @map("deleted_at")
   createdBy                 String?                  @map("created_by")
+  updatedBy                 String?                  @map("updated_by")
   deletedBy                 String?                  @map("deleted_by")
   attendanceConfiguration   AttendanceConfiguration? @relation(fields: [attendanceConfigurationId], references: [id])
   Attendance                Attendance[]
@@ -90,6 +93,7 @@ model Attendance {
   updatedAt          DateTime?         @updatedAt @map("updated_at")
   deletedAt          DateTime?         @map("deleted_at")
   createdBy          String?           @map("created_by")
+  updatedBy          String?           @map("updated_by")
   deletedBy          String?           @map("deleted_by")
   user               User              @relation(fields: [userId], references: [id])
   attendancePeriod   AttendancePeriod? @relation(fields: [attendancePeriodId], references: [id])
@@ -107,6 +111,7 @@ model Overtime {
   updatedAt    DateTime?  @updatedAt @map("updated_at")
   deletedAt    DateTime?  @map("deleted_at")
   createdBy    String?    @map("created_by")
+  updatedBy    String?    @map("updated_by")
   deletedBy    String?    @map("deleted_by")
   user         User       @relation(fields: [userId], references: [id])
   attendance   Attendance @relation(fields: [attendanceId], references: [id])
@@ -125,6 +130,7 @@ model Reimbursement {
   updatedAt          DateTime?        @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
   createdBy          String?          @map("created_by")
+  updatedBy          String?          @map("updated_by")
   deletedBy          String?          @map("deleted_by")
   user               User             @relation(fields: [userId], references: [id])
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
@@ -142,6 +148,7 @@ model Payroll {
   updatedAt          DateTime?        @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
   createdBy          String?          @map("created_by")
+  updatedBy          String?          @map("updated_by")
   deletedBy          String?          @map("deleted_by")
   user               User             @relation(fields: [userId], references: [id])
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
@@ -170,6 +177,7 @@ model Payslip {
   updatedAt                DateTime? @updatedAt @map("updated_at")
   deletedAt                DateTime? @map("deleted_at")
   createdBy                String?   @map("created_by")
+  updatedBy                String?   @map("updated_by")
   deletedBy                String?   @map("deleted_by")
   Payroll                  Payroll   @relation(fields: [payrollId], references: [id])
   user                     User      @relation(fields: [userId], references: [id])
@@ -185,6 +193,7 @@ model PayslipSumary {
   updatedAt          DateTime?        @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
   createdBy          String?          @map("created_by")
+  updatedBy          String?          @map("updated_by")
   deletedBy          String?          @map("deleted_by")
   attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
 
@@ -193,11 +202,12 @@ model PayslipSumary {
 
 model AuditLog {
   id          String    @id @unique @default(uuid())
-  userId      String    @map("user_id")
+  userId      String?   @map("user_id")
   requestId   String?   @map("request_id")
+  ipAddress   String?   @map("ip_address")
   action      String?   @map("action")
   description String?   @map("description")
-  table       String?   @map("table")
+  endpoint    String?   @map("endpoint")
   dto         Json?     @map("dto")
   dataBefore  Json?     @map("data_before")
   dataAfter   Json?     @map("data_after")
@@ -205,8 +215,9 @@ model AuditLog {
   updatedAt   DateTime? @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
   createdBy   String?   @map("created_by")
+  updatedBy   String?   @map("updated_by")
   deletedBy   String?   @map("deleted_by")
-  user        User      @relation(fields: [userId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id])
 
   @@map(name: "audit_logs")
 }
