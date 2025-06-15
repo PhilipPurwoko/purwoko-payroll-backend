@@ -4,12 +4,23 @@ import { UpdateAttendancePeriodDto } from './dto/update-attendance_period.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
 import { m } from '../../util/date.util';
+import _ from 'lodash';
 
 @Injectable()
 export class AttendancePeriodService {
   constructor(private prisma: PrismaService) {}
 
-  create(createDto: CreateAttendancePeriodDto, actor: UserInterface) {
+  async create(createDto: CreateAttendancePeriodDto, actor: UserInterface) {
+    const attendanceConfig =
+      await this.prisma.attendanceConfiguration.findFirst({
+        where: {
+          id: createDto.attendanceConfigurationId,
+          deletedAt: null,
+        },
+      });
+    if (!attendanceConfig) {
+      throw new NotFoundException('Attendance configuration not found');
+    }
     return this.prisma.attendancePeriod.create({
       data: {
         ...createDto,
@@ -42,6 +53,23 @@ export class AttendancePeriodService {
   ) {
     const data = await this.findOne(id);
     if (!data) throw new NotFoundException();
+
+    if (
+      !_.isNil(updateDto.attendanceConfigurationId) &&
+      !_.isEmpty(updateDto.attendanceConfigurationId)
+    ) {
+      const attendanceConfig =
+        await this.prisma.attendanceConfiguration.findFirst({
+          where: {
+            id: updateDto.attendanceConfigurationId,
+            deletedAt: null,
+          },
+        });
+      if (!attendanceConfig) {
+        throw new NotFoundException('Attendance configuration not found');
+      }
+    }
+
     return this.prisma.attendancePeriod.update({
       data: {
         ...updateDto,

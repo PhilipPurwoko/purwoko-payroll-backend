@@ -9,6 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
 import { Status } from '@prisma/client';
 import { m } from '../../util/date.util';
+import _ from 'lodash';
 
 @Injectable()
 export class OvertimeService {
@@ -65,8 +66,36 @@ export class OvertimeService {
   }
 
   async update(id: string, updateDto: UpdateOvertimeDto, user: UserInterface) {
+    if ((updateDto.hoursTaken ?? 0) > 3) {
+      throw new BadRequestException('Overtime cannot be more than 3 hours');
+    }
+
     const data = await this.findOne(id, user);
     if (!data) throw new NotFoundException();
+
+    if (
+      !_.isNil(updateDto.attendanceId) &&
+      !_.isEmpty(updateDto.attendanceId)
+    ) {
+      const attendance = await this.prisma.attendance.findFirst({
+        where: {
+          id: updateDto.attendanceId,
+          userId: user.id,
+          deletedAt: null,
+          status: Status.completed,
+          attendancePeriod: {
+            status: Status.ongoing,
+          },
+        },
+        include: {
+          attendancePeriod: {
+            where: { status: Status.ongoing, deletedAt: null },
+          },
+        },
+      });
+      if (!attendance) throw new BadRequestException('Attendance not found');
+    }
+
     return this.prisma.overtime.update({
       data: {
         ...updateDto,
