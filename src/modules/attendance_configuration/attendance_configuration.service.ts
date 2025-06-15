@@ -51,7 +51,9 @@ export class AttendanceConfigurationService {
     });
   }
 
-  update(id: string, updateDto: UpdateAttendanceConfigurationDto) {
+  async update(id: string, updateDto: UpdateAttendanceConfigurationDto) {
+    const data = await this.findOne(id);
+    if (!data) throw new NotFoundException();
     return this.prisma.attendanceConfiguration.update({
       data: {
         ...updateDto,
@@ -64,7 +66,9 @@ export class AttendanceConfigurationService {
     });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    const data = await this.findOne(id);
+    if (!data) throw new NotFoundException();
     return this.prisma.attendanceConfiguration.update({
       data: {
         deletedAt: new Date(),
