@@ -50,8 +50,8 @@ model User {
 
 model AttendanceConfiguration {
   id                 String             @id @unique @default(uuid())
-  periodStartAt      DateTime?          @map("period_start_at")
-  periodEndAt        DateTime?          @map("period_end_at")
+  periodStartAt      DateTime?          @map("period_start_at") @db.Time
+  periodEndAt        DateTime?          @map("period_end_at") @db.Time
   hourlyRate         Int?               @map("hourly_rate")
   overtimeRate       Int?               @map("overtime_rate")
   overtimeMultiplier Decimal?           @map("overtime_multiplier")
