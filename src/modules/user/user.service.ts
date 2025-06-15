@@ -56,6 +56,13 @@ export class UserService {
         ],
         deletedAt: null,
       },
+      include: {
+        attendances: true,
+        overtimes: true,
+        reimbursements: true,
+        payrolls: true,
+        payslips: true,
+      },
     });
   }
 

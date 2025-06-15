@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserInterface } from '../../interfaces/user.interface';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Status } from '@prisma/client';
 
 @Injectable()
 export class AttendanceService {
@@ -13,6 +14,18 @@ export class AttendanceService {
     const day = now.getDay();
     if (day === 0 || day === 6) {
       throw new BadRequestException('Not allowed during weekends');
+    }
+
+    const attendancePeriod = await this.prisma.attendancePeriod.findFirst({
+      where: {
+        startAt: { lte: now },
+        endAt: { gte: now },
+        status: Status.ongoing,
+        deletedAt: null,
+      },
+    });
+    if (!attendancePeriod) {
+      throw new BadRequestException('Attendance period not found');
     }
 
     // Validate if user already submitted
@@ -35,14 +48,6 @@ export class AttendanceService {
       throw new BadRequestException('Attendance already submitted today.');
     }
 
-    const attendancePeriod = await this.prisma.attendancePeriod.findFirst({
-      where: {
-        startAt: { lte: now },
-        endAt: { gte: now },
-        deletedAt: null,
-      },
-    });
-    if (!attendancePeriod) throw new Error('Attendance period not found');
     return this.prisma.attendance.create({
       data: {
         userId: user.id,
@@ -57,6 +62,12 @@ export class AttendanceService {
       where: {
         userId: user.id,
         deletedAt: null,
+        attendancePeriod: {
+          status: Status.ongoing,
+        },
+      },
+      include: {
+        attendancePeriod: true,
       },
     });
   }
@@ -67,6 +78,9 @@ export class AttendanceService {
         id,
         userId: user.id,
         deletedAt: null,
+        attendancePeriod: {
+          status: Status.ongoing,
+        },
       },
     });
   }

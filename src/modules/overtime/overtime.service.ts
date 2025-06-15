@@ -7,6 +7,7 @@ import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
+import { Status } from '@prisma/client';
 
 @Injectable()
 export class OvertimeService {
@@ -16,6 +17,21 @@ export class OvertimeService {
     if (createDto.hoursTaken > 3) {
       throw new BadRequestException('Overtime cannot be more than 3 hours');
     }
+    const attendance = await this.prisma.attendance.findFirst({
+      where: {
+        id: createDto.attendanceId,
+        userId: user.id,
+        deletedAt: null,
+        attendancePeriod: {
+          status: Status.ongoing,
+        },
+      },
+      include: {
+        attendancePeriod: true,
+      },
+    });
+    if (!attendance) throw new BadRequestException('Attendance not found');
+
     return this.prisma.overtime.create({
       data: {
         ...createDto,
