@@ -4,7 +4,6 @@ import { UpdateAttendancePeriodDto } from './dto/update-attendance_period.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
 import { m } from '../../util/date.util';
-import _ from 'lodash';
 
 @Injectable()
 export class AttendancePeriodService {
@@ -54,10 +53,7 @@ export class AttendancePeriodService {
     const data = await this.findOne(id);
     if (!data) throw new NotFoundException();
 
-    if (
-      !_.isNil(updateDto.attendanceConfigurationId) &&
-      !_.isEmpty(updateDto.attendanceConfigurationId)
-    ) {
+    if (updateDto.attendanceConfigurationId) {
       const attendanceConfig =
         await this.prisma.attendanceConfiguration.findFirst({
           where: {

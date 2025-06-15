@@ -66,8 +66,8 @@ async function main() {
   const attendanceConfigurationId = await prisma.attendanceConfiguration.create(
     {
       data: {
-        hourlyRate: 200000,
-        overtimeRate: 400000,
+        hourlyRate: 100000,
+        overtimeRate: 200000,
         overtimeMultiplier: 2.0,
         startAt: startHour.utc().toDate(),
         endAt: endHour.utc().toDate(),

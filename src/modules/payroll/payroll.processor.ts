@@ -28,12 +28,23 @@ export class PayrollProcessor {
         include: {
           attendances: {
             where: {
+              attendancePeriodId: queue.attendancePeriod.id,
               status: Status.completed,
               deletedAt: null,
             },
           },
-          overtimes: { where: { deletedAt: null } },
-          reimbursements: { where: { deletedAt: null } },
+          overtimes: {
+            where: {
+              attendancePeriodId: queue.attendancePeriod.id,
+              deletedAt: null,
+            },
+          },
+          reimbursements: {
+            where: {
+              attendancePeriodId: queue.attendancePeriod.id,
+              deletedAt: null,
+            },
+          },
         },
       });
 
@@ -45,13 +56,8 @@ export class PayrollProcessor {
       }
 
       const config = queue.attendancePeriod.attendanceConfiguration;
-      const configPeriodStartAt = config.startAt
-        ? m(config.startAt, 'HH:mm:ss')
-        : null;
-
-      const configPeriodEndAt = config.endAt
-        ? m(config.endAt, 'HH:mm:ss')
-        : null;
+      const configPeriodStartAt = config.startAt ? m.utc(config.startAt) : null;
+      const configPeriodEndAt = config.endAt ? m.utc(config.endAt) : null;
 
       // Get hours per day
       const hoursPerDay = configPeriodEndAt?.diff(
