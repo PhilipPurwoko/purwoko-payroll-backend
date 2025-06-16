@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsPositive, IsString, Matches } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
 
 export class CreateAttendanceConfigurationDto {
   @ApiProperty({
@@ -21,28 +21,4 @@ export class CreateAttendanceConfigurationDto {
     message: 'endAt must be in HH:mm:ss format',
   })
   endAt: string;
-
-  @ApiProperty({
-    example: 50000,
-    description: 'Standard hourly pay rate',
-  })
-  @IsNumber()
-  @IsPositive()
-  hourlyRate: number;
-
-  @ApiProperty({
-    example: 100000,
-    description: 'Hourly pay rate for overtime',
-  })
-  @IsNumber()
-  @IsPositive()
-  overtimeRate: number;
-
-  @ApiProperty({
-    example: 2.0,
-    description: 'Overtime multiplier applied to hourly rate',
-  })
-  @IsNumber()
-  @IsPositive()
-  overtimeMultiplier: number;
 }

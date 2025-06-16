@@ -21,43 +21,43 @@ enum Role {
 }
 
 model User {
-  id             String          @id @unique @default(uuid())
-  name           String          @db.VarChar(255)
-  email          String          @db.VarChar(255)
-  password       String
-  role           Role
-  isActive       Boolean         @default(true) @map("is_active")
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime?       @updatedAt @map("updated_at")
-  deletedAt      DateTime?       @map("deleted_at")
-  createdBy      String?         @map("created_by")
-  updatedBy      String?         @map("updated_by")
-  deletedBy      String?         @map("deleted_by")
-  payrolls       Payroll[]
-  attendances    Attendance[]
-  overtimes      Overtime[]
-  reimbursements Reimbursement[]
-  payslips       Payslip[]
-  auditLogs      AuditLog[]
+  id                 String          @id @unique @default(uuid())
+  name               String          @db.VarChar(255)
+  email              String          @db.VarChar(255)
+  password           String
+  role               Role
+  hourlyRate         Int?            @map("hourly_rate")
+  overtimeRate       Int?            @map("overtime_rate")
+  overtimeMultiplier Decimal?        @map("overtime_multiplier")
+  isActive           Boolean         @default(true) @map("is_active")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime?       @updatedAt @map("updated_at")
+  deletedAt          DateTime?       @map("deleted_at")
+  createdBy          String?         @map("created_by")
+  updatedBy          String?         @map("updated_by")
+  deletedBy          String?         @map("deleted_by")
+  payrolls           Payroll[]
+  attendances        Attendance[]
+  overtimes          Overtime[]
+  reimbursements     Reimbursement[]
+  payslips           Payslip[]
+  auditLogs          AuditLog[]
 
   @@map(name: "users")
 }
 
 model AttendanceConfiguration {
-  id                 String             @id @unique @default(uuid())
-  startAt            DateTime?          @map("start_at") @db.Time
-  endAt              DateTime?          @map("end_at") @db.Time
-  hourlyRate         Int?               @map("hourly_rate")
-  overtimeRate       Int?               @map("overtime_rate")
-  overtimeMultiplier Decimal?           @map("overtime_multiplier")
-  isActive           Boolean            @default(true)
-  createdAt          DateTime           @default(now()) @map("created_at")
-  updatedAt          DateTime?          @updatedAt @map("updated_at")
-  deletedAt          DateTime?          @map("deleted_at")
-  createdBy          String?            @map("created_by")
-  updatedBy          String?            @map("updated_by")
-  deletedBy          String?            @map("deleted_by")
-  AttendancePeriod   AttendancePeriod[]
+  id               String             @id @unique @default(uuid())
+  startAt          DateTime?          @map("start_at") @db.Time
+  endAt            DateTime?          @map("end_at") @db.Time
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime?          @updatedAt @map("updated_at")
+  deletedAt        DateTime?          @map("deleted_at")
+  createdBy        String?            @map("created_by")
+  updatedBy        String?            @map("updated_by")
+  deletedBy        String?            @map("deleted_by")
+  AttendancePeriod AttendancePeriod[]
 
   @@map(name: "attendance_configurations")
 }
