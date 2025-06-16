@@ -16,7 +16,8 @@ Create MVP and scalable Payroll System with defined prorate rules
 #### Access Control
 
 - Admin
-    - Admin can define salary rules
+    - Admin can define salary rules for each user
+    - Admin can define attendance configuration containing shift start and end time, example: 9AM to 5PM
     - Admin can create attendance period, normally should be monthly. After the period is completed (when admin proceed
       to generate payroll), then admin can must new period for next month so the employees can create new attendance
       record
@@ -30,7 +31,7 @@ Create MVP and scalable Payroll System with defined prorate rules
 
 #### Salary Rules
 
-- All employee has same salary rules
+- Each employee has different salary rate
 - hourly rate
 - overtime multiplier
 - overtime rate
@@ -247,7 +248,7 @@ scenario in terms of performance and scalability.
 I am well aware that this project is imperfect and still need a lot of improvement. Here are some things that I would
 like to improve
 
-- [ ] Set hourly rate for each employee
+- [x] Set hourly rate for each employee
 - [ ] Improve documentation
 - [ ] Implement pagination
 - [ ] Implement proper unit test and integration test
