@@ -1,0 +1,53 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: purwoko_payroll_api
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/home/node/app
+      - /home/node/app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    networks:
+      - purwoko-network
+  postgres:
+    container_name: purwoko_payroll_postgres
+    image: postgres:16.2
+    restart: no
+    environment:
+      POSTGRES_PASSWORD: password
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres-volume:/var/lib/postgresql/data
+    networks:
+      - purwoko-network
+  redis:
+    container_name: purwoko_payroll_redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+    networks:
+      - purwoko-network
+
+  redis-insight:
+    container_name: purwoko_payroll_redis_insight
+    image: redis/redisinsight:latest
+    ports:
+      - 5540:5540
+    environment:
+      RABBITMQ_DEFAULT_VHOST: rabbit
+    volumes:
+      - ./redisinsight:/data
+    networks:
+      - purwoko-network
+
+networks:
+  purwoko-network:
+    driver: bridge

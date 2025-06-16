@@ -6,7 +6,7 @@ import { NotFoundException } from '@nestjs/common';
 import { UserInterface } from '../../interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 
-jest.mock('src/util/date.util', () => {
+jest.mock('../../util/date.util', () => {
   const moment = require('moment');
   return {
     m: () => moment.utc('2025-06-15T00:00:00Z'),

@@ -3,7 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserInterface } from '../../interfaces/user.interface';
 
-jest.mock('src/util/date.util', () => {
+jest.mock('../../util/date.util', () => {
   const moment = require('moment'); // Get actual moment
   return {
     m: () => moment.utc('2025-06-15T00:00:00Z'), // Make m() callable

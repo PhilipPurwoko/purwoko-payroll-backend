@@ -1,0 +1,7 @@
+postgres-volume
+redisinsight
+dist
+*.log
+node_modules
+*.md
+.git
