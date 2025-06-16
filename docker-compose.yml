@@ -1,5 +1,8 @@
 services:
   api:
+    depends_on:
+      - postgres
+      - redis
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,6 +19,7 @@ services:
       - NODE_ENV=development
     networks:
       - purwoko-network
+    command: sh -c "npx prisma migrate deploy && node dist/main.js"
   postgres:
     container_name: purwoko_payroll_postgres
     image: postgres:16.2
@@ -37,6 +41,8 @@ services:
       - purwoko-network
 
   redis-insight:
+    depends_on:
+      - redis
     container_name: purwoko_payroll_redis_insight
     image: redis/redisinsight:latest
     ports:
