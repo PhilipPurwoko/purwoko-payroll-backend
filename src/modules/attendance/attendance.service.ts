@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Status } from '@prisma/client';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { m } from 'src/util/date.util';
+import { m } from '../../util/date.util';
 
 @Injectable()
 export class AttendanceService {

@@ -15,6 +15,12 @@ nest-g:
 %:
 	@:
 
+docker-dev:
+	@docker compose up -d --build
+
+docker-prod:
+	@docker compose -f docker-compose.prod.yml up -d --build
+
 docker-migrate:
 	@docker exec purwoko_payroll_api npm run prisma:migrate:dev
 

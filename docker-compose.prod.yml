@@ -3,17 +3,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: dev
+      target: prod
     container_name: purwoko_payroll_api
     ports:
       - '3000:3000'
     volumes:
-      - .:/home/node/app
       - /home/node/app/node_modules
     env_file:
-      - .env
+      - prod.env
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
     networks:
       - purwoko-network
   postgres:

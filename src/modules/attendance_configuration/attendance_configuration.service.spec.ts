@@ -3,10 +3,10 @@ import { AttendanceConfigurationService } from './attendance_configuration.servi
 import { PrismaService } from '../../prisma/prisma.service';
 import { BadRequestException } from '@nestjs/common';
 import { CreateAttendanceConfigurationDto } from './dto/create-attendance_configuration.dto';
-import { parseTimeToDate } from 'src/util/date.util';
+import { parseTimeToDate } from '../../util/date.util';
 import { UserInterface } from '../../interfaces/user.interface';
 
-jest.mock('src/util/date.util', () => {
+jest.mock('../../util/date.util', () => {
   const moment = require('moment');
   return {
     m: () => moment.utc('2025-06-15T00:00:00Z'),

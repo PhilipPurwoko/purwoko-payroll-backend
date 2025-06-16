@@ -82,6 +82,13 @@ This project is divided into 3 main services which is very simple
 
 ## Project setup
 
+Copy `.env.example` to `.env` and `prod.env` and fill required values
+
+```bash
+$ copy .env.example .env
+$ copy .env.example .prod.env
+```
+
 ### Using Docker (Recommended)
 
 Use `host.docker.internal` as database host while using docker because the container is running inside docker
@@ -89,8 +96,22 @@ environment
 
 Run compose in detached mode
 
+For development
+
 ```bash
-$ docker compose up -d
+$ docker compose up -d --build
+
+# or with Makefile
+$ make docker-dev
+```
+
+For production
+
+```bash
+$ docker compose -f docker-compose.prod.yml up -d --build
+
+# or with Makefile
+$ make docker-prod
 ```
 
 Run migrations
@@ -133,12 +154,6 @@ $ npm run prisma:seed
 
 #### Compile and run the project
 
-Copy `.env.example` to `.env` and fill required values
-
-```bash
-$ copy .env.example .env
-```
-
 Run in Development
 
 ```bash
@@ -160,7 +175,6 @@ $ npm run start:prod
 - Swagger docs are available at http://localhost:3000/swagger
 
 - Bull board is available at http://localhost:3000/queues
-
 
 ### Run tests
 
