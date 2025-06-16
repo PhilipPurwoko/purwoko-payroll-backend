@@ -3,6 +3,8 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
+  IsPositive,
   IsString,
   MinLength,
 } from 'class-validator';
@@ -38,4 +40,28 @@ export class CreateUserDto {
   })
   @IsEnum(Role)
   role: Role;
+
+  @ApiProperty({
+    example: 50000,
+    description: 'Standard hourly pay rate',
+  })
+  @IsNumber()
+  @IsPositive()
+  hourlyRate: number;
+
+  @ApiProperty({
+    example: 100000,
+    description: 'Hourly pay rate for overtime',
+  })
+  @IsNumber()
+  @IsPositive()
+  overtimeRate: number;
+
+  @ApiProperty({
+    example: 2.0,
+    description: 'Overtime multiplier applied to hourly rate',
+  })
+  @IsNumber()
+  @IsPositive()
+  overtimeMultiplier: number;
 }
