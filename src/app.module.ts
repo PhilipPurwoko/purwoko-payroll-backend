@@ -12,7 +12,7 @@ import { AttendancePeriodModule } from './modules/attendance_period/attendance_p
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RequestIdMiddleware } from './middleware/request-id.middleware';
 import { RequestContext } from './commons/request-context.service';
 import { AppLogger } from './interceptor/logger.service';
@@ -23,11 +23,15 @@ import { BullModule } from '@nestjs/bull';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    BullModule.forRoot({
-      redis: {
-        host: 'localhost',
-        port: 6379,
-      },
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get<string>('REDIS_HOST'),
+          port: configService.get<number>('REDIS_PORT'),
+        },
+      }),
+      inject: [ConfigService],
     }),
     PrismaModule,
     AuthModule,

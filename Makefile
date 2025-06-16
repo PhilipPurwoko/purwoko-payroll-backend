@@ -14,3 +14,9 @@ nest-g:
 # Prevent Make from interpreting module names as Makefile targets
 %:
 	@:
+
+docker-migrate:
+	@docker exec purwoko_payroll_api npm run prisma:migrate:dev
+
+docker-seed:
+	@docker exec purwoko_payroll_api npm run prisma:seed

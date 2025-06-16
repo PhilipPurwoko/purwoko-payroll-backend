@@ -71,14 +71,41 @@ This project is divided into 3 main services which is very simple
 - Nodejs
 - Database (Postgres)
 - Redis (Used for Queue)
+- Docker (Optional)
 
 ## Tech Stack
 
 - NestJS, API Framework
 - Prisma, for Database ORM
 - Bull, for Queue
+- Docker
 
 ## Project setup
+
+### Using Docker (Recommended)
+
+Use `host.docker.internal` as database host while using docker because the container is running inside docker
+environment
+
+Run compose in detached mode
+
+```bash
+$ docker compose up -d
+```
+
+Run migrations
+
+```bash
+$ make docker-migrate
+```
+
+Run seeders
+
+```bash
+$ make docker-seed
+```
+
+### Without Docker
 
 Nodejs version was specified in `.nvmrc` file, so you can use the command below to install all the dependencies and
 
@@ -104,7 +131,7 @@ Run seeders
 $ npm run prisma:seed
 ```
 
-### Compile and run the project
+#### Compile and run the project
 
 Copy `.env.example` to `.env` and fill required values
 
@@ -131,7 +158,9 @@ $ npm run start:prod
 ### Docs
 
 - Swagger docs are available at http://localhost:3000/swagger
+
 - Bull board is available at http://localhost:3000/queues
+
 
 ### Run tests
 
@@ -191,11 +220,18 @@ $ nest g resource <module-name>
 
 For function that used across modules, placed them outside `modules` folder
 
+## Queue
+
+There is two queue in this project. One for processing **attendance** records and one for processing **payroll**.
+Predict those
+will be the highest hits in peak hours. Imagine having 1000 employees making an attendance record at about the same time
+at 06:50 - 07:00. Also when admin want to generate payroll to all thousand employees. Queue is a good choice for this
+scenario in terms of performance and scalability.
+
 ## Further Improvements
 
 - [ ] Implement pagination
 - [ ] Implement proper unit test and integration test
 - [ ] Use redis for caching
-- [ ] Dockerized the project
 - [ ] Use Sentry for monitoring
 - [ ] Enhance security
