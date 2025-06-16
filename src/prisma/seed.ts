@@ -1,7 +1,8 @@
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
 import { v4 } from 'uuid';
-import { PrismaClient, User } from '@prisma/client';
+import { Prisma, PrismaClient, User } from '@prisma/client';
+
 import { m, parseTimeToDate } from '../util/date.util';
 import { convertToEmail, getRandomName } from './name';
 
@@ -25,6 +26,9 @@ async function main() {
       password: masterHashedPassword,
       role: 'admin',
       isActive: true,
+      hourlyRate: null,
+      overtimeRate: null,
+      overtimeMultiplier: null,
       createdAt: now.utc().toDate(),
       updatedAt: now.utc().toDate(),
       updatedBy: null,
@@ -34,8 +38,13 @@ async function main() {
     },
   ];
 
+  const hourlyRates = [50000, 100000, 150000, 200000, 250000, 300000];
   for (let i = 0; i < 100; i++) {
     const id = v4();
+    const hourlyRate =
+      hourlyRates[Math.floor(Math.random() * hourlyRates.length)];
+    const overtimeMultiplier = 2;
+    const overtimeRate = hourlyRate * overtimeMultiplier;
     const name = getRandomName();
     const email = convertToEmail(name);
     const password = process.env.SEEDER_PASSWORD || 'password';
@@ -47,6 +56,9 @@ async function main() {
       password: hashedPassword,
       role: 'employee',
       isActive: true,
+      hourlyRate: hourlyRate,
+      overtimeMultiplier: new Prisma.Decimal(overtimeMultiplier),
+      overtimeRate: overtimeRate,
       createdAt: now.utc().toDate(),
       updatedAt: now.utc().toDate(),
       updatedBy: null,
@@ -66,9 +78,6 @@ async function main() {
   const attendanceConfigurationId = await prisma.attendanceConfiguration.create(
     {
       data: {
-        hourlyRate: 100000,
-        overtimeRate: 200000,
-        overtimeMultiplier: 2.0,
         startAt: startHour.utc().toDate(),
         endAt: endHour.utc().toDate(),
         createdAt: now.utc().toDate(),

@@ -77,9 +77,9 @@ export class PayrollProcessor {
 
       // Calculate take home pay
       const totalAttendanceAmount =
-        totalAttendanceHours * (config.hourlyRate ?? 0);
+        totalAttendanceHours * (employee.hourlyRate ?? 0);
       const totalOvertimeAmount =
-        totalOvertimeHours * (config.overtimeRate ?? 0);
+        totalOvertimeHours * (employee.overtimeRate ?? 0);
       const totalReimbursementAmount = employee.reimbursements.reduce(
         (prev, next) => prev + (next.amount ?? 0),
         0,
@@ -109,10 +109,10 @@ export class PayrollProcessor {
           totalOvertime: totalOvertime,
           totalOvertimeHours: totalOvertimeHours,
           hoursPerDay: hoursPerDay,
-          hourlyRate: config.hourlyRate,
-          overtimeRate: config.overtimeRate,
+          hourlyRate: employee.hourlyRate,
+          overtimeRate: employee.overtimeRate,
           payrollId: payroll.id,
-          overtimeMultiplier: config.overtimeMultiplier,
+          overtimeMultiplier: employee.overtimeMultiplier,
           userId: queue.employee.id,
           createdBy: queue.actor.id,
         },
