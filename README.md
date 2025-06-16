@@ -244,6 +244,11 @@ scenario in terms of performance and scalability.
 
 ## Further Improvements
 
+I am well aware that this project is imperfect and still need a lot of improvement. Here are some things that I would
+like to improve
+
+- [ ] Set hourly rate for each employee
+- [ ] Improve documentation
 - [ ] Implement pagination
 - [ ] Implement proper unit test and integration test
 - [ ] Use redis for caching
