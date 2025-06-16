@@ -92,8 +92,8 @@ $ copy .env.example .prod.env
 
 ### Using Docker (Recommended)
 
-Use `host.docker.internal` as database host while using docker because the container is running inside docker
-environment
+Use `host.docker.internal` or `postgres` as database host while using docker because the container is running inside
+docker environment
 
 Run compose in detached mode
 

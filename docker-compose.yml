@@ -19,7 +19,7 @@ services:
       - NODE_ENV=development
     networks:
       - purwoko-network
-    command: sh -c "npx prisma migrate deploy && node dist/main.js"
+    command: sh -c "npx prisma migrate deploy && npm run start:dev"
   postgres:
     container_name: purwoko_payroll_postgres
     image: postgres:16.2
